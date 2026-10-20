@@ -21,6 +21,7 @@ import type {
   ExerciseDefinition,
   LoggedExercise,
   WorkoutProgram,
+  WorkoutRoutine,
   WorkoutSessionLog,
 } from '../types';
 import { ValidationError, requireFiniteNumber } from './types';
@@ -307,5 +308,107 @@ export function weeklyCompletion(
     adherenceShare: Math.min(1, realized / planned),
     volumeKg: Math.round(volume * 10) / 10,
     sessionsWithPain: pain,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Treino PRÓPRIO do usuário (§7: o atleta no comando — o app audita, não prescreve)
+// ---------------------------------------------------------------------------
+
+export interface CustomRoutineInput {
+  name: string;
+  dayOfWeek?: string;
+  focus?: string;
+  exercises: Array<{
+    exerciseId: string;
+    exerciseName: string;
+    targetMuscle: string;
+    equipment: string;
+    workingSets: number;
+    repsTarget: string;
+    targetRir: number;
+    restSeconds: number;
+  }>;
+}
+
+/**
+ * Monta um WorkoutProgram a partir do treino que o usuário JÁ FAZ.
+ * Nada de prescrição: os dados são do usuário — validados (números plausíveis,
+ * faixa de reps reconhecível) para o motor de progressão funcionar honestamente.
+ */
+export function buildCustomProgram(input: {
+  name: string;
+  routines: CustomRoutineInput[];
+}): WorkoutProgram {
+  const name = input.name.trim();
+  if (name.length < 2 || name.length > 60) {
+    throw new ValidationError('name', 'Nome do treino deve ter 2 a 60 caracteres');
+  }
+  if (!Array.isArray(input.routines) || input.routines.length < 1 || input.routines.length > 7) {
+    throw new ValidationError('routines', 'Informe de 1 a 7 sessões de treino');
+  }
+
+  const routines: WorkoutRoutine[] = input.routines.map((routine, rIdx) => {
+    const rName = routine.name.trim() || `Sessão ${rIdx + 1}`;
+    if (rName.length > 60) throw new ValidationError('routine.name', `Nome da sessão ${rIdx + 1} muito longo`);
+    if (!Array.isArray(routine.exercises) || routine.exercises.length < 1 || routine.exercises.length > 15) {
+      throw new ValidationError('exercises', `${rName}: informe de 1 a 15 exercícios`);
+    }
+
+    const exercises: ExerciseDefinition[] = routine.exercises.map((ex, eIdx) => {
+      if (!ex.exerciseId || !ex.exerciseName || !ex.exerciseName.trim()) {
+        throw new ValidationError('exercises', `${rName} · exercício ${eIdx + 1}: nome vazio`);
+      }
+      // parseRepsTarget valida a faixa (ex.: "8-12") — critica "até a falha", 0, etc.
+      parseRepsTarget(ex.repsTarget);
+      const sets = Math.round(ex.workingSets);
+      if (!Number.isFinite(ex.workingSets) || sets < 1 || sets > 10) {
+        throw new ValidationError('workingSets', `${rName} · ${ex.exerciseName}: séries de trabalho deve ser 1 a 10`);
+      }
+      if (!Number.isFinite(ex.targetRir) || ex.targetRir < 0 || ex.targetRir > 5) {
+        throw new ValidationError('targetRir', `${rName} · ${ex.exerciseName}: RIR alvo deve ser 0 a 5`);
+      }
+      if (!Number.isFinite(ex.restSeconds) || ex.restSeconds < 30 || ex.restSeconds > 360) {
+        throw new ValidationError('restSeconds', `${rName} · ${ex.exerciseName}: descanso deve ser 30 a 360 s`);
+      }
+      return {
+        id: ex.exerciseId,
+        name: ex.exerciseName.trim(),
+        targetMuscle: ex.targetMuscle || '—',
+        equipment: ex.equipment || '—',
+        warmupSets: 1,
+        workingSets: sets,
+        repsTarget: ex.repsTarget.trim(),
+        targetRir: ex.targetRir,
+        restSeconds: Math.round(ex.restSeconds),
+        notes: '',
+      };
+    });
+
+    const estimatedDurationMin = Math.max(
+      20,
+      exercises.reduce((acc, ex) => acc + ex.workingSets * (ex.restSeconds + 45) + 90, 0) / 60
+    );
+    return {
+      id: `custom_r_${rIdx + 1}`,
+      name: rName,
+      dayOfWeek: routine.dayOfWeek,
+      focus: routine.focus || rName,
+      exercises,
+      estimatedDurationMin: Math.round(estimatedDurationMin),
+    };
+  });
+
+  return {
+    id: 'custom',
+    name,
+    splitType: 'personalizado',
+    weeklyFrequency: routines.length,
+    currentWeek: 1,
+    totalWeeks: 8,
+    isDeloadWeek: false,
+    routines,
+    scienceNotes:
+      'Programa definido pelo usuário. O motor determinístico apenas AUDITA: progressão sugerida por histórico (RIR/reps/agendado vs realizado), sinalizando quando o volume ou a dor pedem cautela.',
   };
 }

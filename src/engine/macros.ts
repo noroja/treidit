@@ -246,3 +246,77 @@ export function distributeMeals(
   biggest.fatG += perDay.fatGramsPerDay - acc.f;
   return meals;
 }
+
+// ---------------------------------------------------------------------------
+// Dieta PRÓPRIA do usuário (§7: manter a dieta que já funciona, com auditoria)
+// ---------------------------------------------------------------------------
+
+import type { PhysiologicalSex } from './types';
+
+export interface UserDietMacros {
+  proteinGrams: number;
+  carbsGrams: number;
+  fatGrams: number;
+}
+
+export interface ValidatedUserDiet {
+  /** kcal DERIVADAS por Atwater 4/4/9 a partir dos macros informados. */
+  caloriesKcal: number;
+  proteinGrams: number;
+  carbsGrams: number;
+  fatGrams: number;
+}
+
+/**
+ * Valida as metas que o usuário JÁ usa. Calorias nunca são campo de digitação:
+ * são derivadas de proteína/carboidrato/gordura por Atwater (consistência
+ * energética obrigatória). Extremos são REJEITADOS — o app não "corrige"
+ * em silêncio e não prescreve por cima da dieta do usuário.
+ *
+ * Limites de segurança (§11):
+ *  - gordura mínima 0,6 g/kg (esteroidogênese, transporte de vitaminas);
+ *  - proteína em [0,6 ; 3,5] g/kg (fora disso não é dieta COL audível);
+ *  - carboidrato ≥ 0 g; proteína/carb/gordura inteiros gramas.
+ */
+export function validateUserTargets(
+  weightKg: number,
+  sex: PhysiologicalSex,
+  input: UserDietMacros,
+): ValidatedUserDiet {
+  const w = requireFiniteNumber(weightKg, 'weightKg', 35, 300);
+  const p = requireFiniteNumber(input.proteinGrams, 'proteinGrams', 0, 10000) / w;
+  const c = requireFiniteNumber(input.carbsGrams, 'carbsGrams', 0, 10000) / w;
+  const f = requireFiniteNumber(input.fatGrams, 'fatGrams', 0, 10000) / w;
+
+  if (p < 0.6 || p > 3.5) {
+    throw new ValidationError(
+      'proteinGrams',
+      `Proteína ${input.proteinGrams} g (${p.toFixed(2)} g/kg) está fora de [0,6 ; 3,5] g/kg — ajuste antes de aplicar.`,
+    );
+  }
+  if (c < 0) {
+    throw new ValidationError('carbsGrams', 'Carboidrato não pode ser negativo (g).');
+  }
+  if (f < 0.6) {
+    throw new ValidationError(
+      'fatGrams',
+      `Gordura ${input.fatGrams} g (${f.toFixed(2)} g/kg) está abaixo do mínimo de 0,6 g/kg.`,
+    );
+  }
+
+  const derivedCalories = Math.round(input.proteinGrams * 4 + input.carbsGrams * 4 + input.fatGrams * 9);
+  const floor = sex === 'feminino' ? 1200 : 1500;
+  if (derivedCalories < floor) {
+    throw new ValidationError(
+      'calories',
+      `${derivedCalories} kcal está abaixo do piso de segurança de ${floor} kcal — dieta rejeitada.`,
+    );
+  }
+
+  return {
+    caloriesKcal: derivedCalories,
+    proteinGrams: Math.round(input.proteinGrams),
+    carbsGrams: Math.round(input.carbsGrams),
+    fatGrams: Math.round(input.fatGrams),
+  };
+}

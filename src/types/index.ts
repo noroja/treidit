@@ -165,7 +165,8 @@ export interface NutritionPlan {
    * segurança disparados, fórmulas e folga de arredondamento. Opcional para
    * manter compatibilidade com planos antigos persistidos no localStorage.
    */
-  audit?: import('../engine/types').MacroAudit & {
+  audit?: Omit<import('../engine/types').MacroAudit, 'strategy' | 'energyMethod'> & {
+    strategy: string;
     energyMethod: string;
     formula: string;
     limitations: string;
@@ -183,6 +184,17 @@ export interface DailyNutritionLog {
   hungerLevel: 'baixa' | 'moderada' | 'alta';
   satietyLevel: 'ruim' | 'boa' | 'excelente';
   energyLevel: 'baixa' | 'normal' | 'alta';
+}
+
+export interface WorkoutFeedback {
+  id: string;
+  date: string;
+  /** Percepção geral do treino em uso: 1 (péssimo) a 5 (excelente). */
+  rating: 1 | 2 | 3 | 4 | 5;
+  painReported: boolean;
+  /** Consegue cumprir o split na rotina de vida? */
+  fitsSchedule: boolean;
+  note: string;
 }
 
 export interface RecoveryLog {

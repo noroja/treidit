@@ -74,11 +74,11 @@ export const AdaptiveEngineModal: React.FC<AdaptiveEngineModalProps> = ({
           id: `adj_${Date.now()}`,
           date: new Date().toISOString().split('T')[0],
           status: data.status || 'optimal',
-          title: data.diagnosis || 'Auditoria Adaptativa ConcluÃ­da',
-          whatChanged: data.whatChanged || 'ManutenÃ§Ã£o programada do microciclo.',
-          whyChanged: data.whyChanged || 'Sua resposta neuromuscular e taxa metabÃ³lica mantÃªm-se favorÃ¡veis.',
-          dataTrigger: data.dataTrigger || 'AnÃ¡lise de peso, cargas e adesÃ£o dos Ãºltimos 14 dias.',
-          evaluationMetrics: data.evaluationMetrics || 'Acompanhar mÃ©dia mÃ³vel do peso na prÃ³xima semana.',
+          title: data.diagnosis || 'Auditoria Adaptativa Concluída',
+          whatChanged: data.whatChanged || 'Manutenção programada do microciclo.',
+          whyChanged: data.whyChanged || 'Sua resposta neuromuscular e taxa metabólica mantêm-se favoráveis.',
+          dataTrigger: data.dataTrigger || 'Análise de peso, cargas e adesão dos últimos 14 dias.',
+          evaluationMetrics: data.evaluationMetrics || 'Acompanhar média móvel do peso na próxima semana.',
           applied: false,
         };
         setCurrentAudit(generatedAdj);
@@ -117,7 +117,7 @@ export const AdaptiveEngineModal: React.FC<AdaptiveEngineModalProps> = ({
             </div>
             <div>
               <span className="text-[11px] font-bold   text-lime">
-                Diferencial TecnolÃ³gico
+                Diferencial Tecnológico
               </span>
               <h2 className="text-base sm:text-lg font-semibold text-white">
                 Motor de Ajustes Adaptativos KINETIC
@@ -138,23 +138,23 @@ export const AdaptiveEngineModal: React.FC<AdaptiveEngineModalProps> = ({
           {/* Flow Visualizer */}
           <div className="bg-base/80 border border-elevated rounded-xl p-4">
             <div className="text-[12.5px] font-semibold text-muted mb-2 ">
-              Ciclo ContÃ­nuo de Resposta Individual
+              Ciclo Contínuo de Resposta Individual
             </div>
             <div className="flex items-center justify-between text-xs text-strong font-medium overflow-x-auto gap-2 py-1 scrollbar-none">
               <div className="text-center px-2 py-1 rounded bg-panel border border-elevated shrink-0">1. Dados</div>
               <ChevronRight className="w-3.5 h-3.5 text-line-strong shrink-0" />
-              <div className="text-center px-2 py-1 rounded bg-panel border border-elevated shrink-0">2. PrescriÃ§Ã£o</div>
+              <div className="text-center px-2 py-1 rounded bg-panel border border-elevated shrink-0">2. Prescrição</div>
               <ChevronRight className="w-3.5 h-3.5 text-line-strong shrink-0" />
-              <div className="text-center px-2 py-1 rounded bg-panel border border-elevated shrink-0">3. ExecuÃ§Ã£o</div>
+              <div className="text-center px-2 py-1 rounded bg-panel border border-elevated shrink-0">3. Execução</div>
               <ChevronRight className="w-3.5 h-3.5 text-line-strong shrink-0" />
               <div className="text-center px-2 py-1 rounded bg-panel border border-elevated shrink-0">4. Registro</div>
               <ChevronRight className="w-3.5 h-3.5 text-line-strong shrink-0" />
-              <div className="text-center px-2 py-1 rounded bg-panel border border-elevated shrink-0">5. AnÃ¡lise</div>
+              <div className="text-center px-2 py-1 rounded bg-panel border border-elevated shrink-0">5. Análise</div>
               <ChevronRight className="w-3.5 h-3.5 text-line-strong shrink-0" />
               <div className="text-center px-2 py-1 rounded bg-lime/20 text-lime border border-lime/25 font-bold shrink-0">6. Ajuste</div>
             </div>
             <div className="text-[12.5px] text-muted mt-2">
-              O sistema nÃ£o faz alteraÃ§Ãµes arbitrÃ¡rias: cada decisÃ£o Ã© fundamentada nos seus registros reais de carga, RIR, adesÃ£o e circunferÃªncias corporais.
+              O sistema não faz alterações arbitrárias: cada decisão é fundamentada nos seus registros reais de carga, RIR, adesão e circunferências corporais.
             </div>
           </div>
 
@@ -193,12 +193,12 @@ export const AdaptiveEngineModal: React.FC<AdaptiveEngineModalProps> = ({
               </div>
 
               <div className="bg-panel/90 p-3 rounded-lg border border-elevated">
-                <span className="text-lime font-bold block mb-1">3. Quais dados levaram Ã  mudanÃ§a?</span>
+                <span className="text-lime font-bold block mb-1">3. Quais dados levaram à mudança?</span>
                 <p className="text-strong leading-relaxed">{currentAudit.dataTrigger}</p>
               </div>
 
               <div className="bg-panel/90 p-3 rounded-lg border border-elevated">
-                <span className="text-lime font-bold block mb-1">4. O que serÃ¡ observado?</span>
+                <span className="text-lime font-bold block mb-1">4. O que será observado?</span>
                 <p className="text-strong leading-relaxed">{currentAudit.evaluationMetrics}</p>
               </div>
             </div>
@@ -211,7 +211,7 @@ export const AdaptiveEngineModal: React.FC<AdaptiveEngineModalProps> = ({
                 </span>
               ) : (
                 <span className="text-[12.5px] text-muted">
-                  {currentAudit.applied ? 'Ajuste jÃ¡ integrado no plano ativo.' : 'Clique abaixo para aplicar este ajuste ao seu treino/dieta.'}
+                  {currentAudit.applied ? 'Ajuste já integrado no plano ativo.' : 'Clique abaixo para aplicar este ajuste ao seu treino/dieta.'}
                 </span>
               )}
 
@@ -228,7 +228,7 @@ export const AdaptiveEngineModal: React.FC<AdaptiveEngineModalProps> = ({
           {/* Past Adjustments Log */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold   text-strong">
-              HistÃ³rico de Ajustes Anteriores
+              Histórico de Ajustes Anteriores
             </h4>
 
             {adjustmentHistory.length === 0 ? (

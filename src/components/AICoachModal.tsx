@@ -35,7 +35,7 @@ export const AICoachModal: React.FC<AICoachModalProps> = ({
     {
       id: 'welcome',
       role: 'model',
-      text: `OlÃ¡, ${profile.name.split(' ')[0]}! Eu sou o KINETIC IA, seu treinador cientÃ­fico e cientista de dados corporais.\n\nTenho acesso em tempo real aos seus registros de peso, cargas registradas, RIR, adesÃ£o nutricional e recuperaÃ§Ã£o. Como posso ajudar na sua evoluÃ§Ã£o hoje?`,
+      text: `Olá, ${profile.name.split(' ')[0]}! Eu sou o KINETIC IA, seu treinador científico e cientista de dados corporais.\n\nTenho acesso em tempo real aos seus registros de peso, cargas registradas, RIR, adesão nutricional e recuperação. Como posso ajudar na sua evolução hoje?`,
       time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -47,11 +47,11 @@ export const AICoachModal: React.FC<AICoachModalProps> = ({
   const suggestedQuestions = [
     'Por que meu treino mudou?',
     'Por que minhas calorias mudaram?',
-    'Qual a lÃ³gica de Belmiro de Salles para o meu treino?',
+    'Qual a lógica de Belmiro de Salles para o meu treino?',
     'Como Dudu Haluch e Chris Aceto ajustariam minha dieta?',
     'Estou evoluindo ou estagnado?',
-    'Por que meu peso nÃ£o estÃ¡ baixando?',
-    'Para quem, para quÃª e em qual momento este estÃ­mulo serve?',
+    'Por que meu peso não está baixando?',
+    'Para quem, para quê e em qual momento este estímulo serve?',
   ];
 
   const scrollToBottom = () => {
@@ -121,7 +121,7 @@ export const AICoachModal: React.FC<AICoachModalProps> = ({
         const modelMessage: Message = {
           id: `resp_${Date.now()}`,
           role: 'model',
-          text: data.reply || 'Entendido. Com base nos seus dados atuais, sua evoluÃ§Ã£o permanece consistente.',
+          text: data.reply || 'Entendido. Com base nos seus dados atuais, sua evolução permanece consistente.',
           time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
         };
         setMessages((prev) => [...prev, modelMessage]);
@@ -132,7 +132,7 @@ export const AICoachModal: React.FC<AICoachModalProps> = ({
       const fallbackMsg: Message = {
         id: `err_${Date.now()}`,
         role: 'model',
-        text: `Com base nos seus dados salvos:\nâ€¢ Seu peso atual Ã© de ${anthropometry[0]?.weightKg || 79.5} kg com cintura de ${anthropometry[0]?.waistCm || 82} cm.\nâ€¢ Sua adesÃ£o nutricional estÃ¡ em ${Math.round((todayNutrition.adherenceScore || 5) * 20)}%.\nâ€¢ Sua progressÃ£o de treino indica manutenÃ§Ã£o da sobrecarga sem relatos graves de dor.\nO sistema adaptativo mantÃ©m a estratÃ©gia atual para consolidaÃ§Ã£o das adaptaÃ§Ãµes.`,
+        text: `Com base nos seus dados salvos:\nâ€¢ Seu peso atual é de ${anthropometry[0]?.weightKg || 79.5} kg com cintura de ${anthropometry[0]?.waistCm || 82} cm.\nâ€¢ Sua adesão nutricional está em ${Math.round((todayNutrition.adherenceScore || 5) * 20)}%.\nâ€¢ Sua progressão de treino indica manutenção da sobrecarga sem relatos graves de dor.\nO sistema adaptativo mantém a estratégia atual para consolidação das adaptações.`,
         time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, fallbackMsg]);
@@ -161,7 +161,7 @@ export const AICoachModal: React.FC<AICoachModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-muted">
-                Respostas orientadas pela ciÃªncia e pelo seu histÃ³rico individual
+                Respostas orientadas pela ciência e pelo seu histórico individual
               </p>
             </div>
           </div>
@@ -229,7 +229,7 @@ export const AICoachModal: React.FC<AICoachModalProps> = ({
           {loading && (
             <div className="flex items-center gap-2 text-xs text-muted bg-base p-3 rounded-xl border border-elevated w-fit">
               <Loader2 className="w-4 h-4 animate-spin text-lime" />
-              <span>KINETIC IA cruzando seus dados com a literatura cientÃ­fica...</span>
+              <span>KINETIC IA cruzando seus dados com a literatura científica...</span>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -246,7 +246,7 @@ export const AICoachModal: React.FC<AICoachModalProps> = ({
           >
             <input
               type="text"
-              placeholder="Pergunte sobre seus treinos, calorias ou evoluÃ§Ã£o..."
+              placeholder="Pergunte sobre seus treinos, calorias ou evolução..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={loading}

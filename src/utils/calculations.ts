@@ -1,5 +1,5 @@
 import { Anthropometry, GenderType, GoalType, UserProfile, WorkoutProgram, WorkoutRoutine, MacroTarget, NutritionPlan, AdaptiveAdjustment, WorkoutSessionLog } from '../types';
-import { computeNutritionTargets, distributeMeals } from '../engine/macros';
+import { computeNutritionTargets, distributeMeals, validateUserTargets } from '../engine/macros';
 import { estimateBmr } from '../engine/energy';
 
 /**
@@ -604,5 +604,96 @@ export function runAdaptiveAudit(
     dataTrigger: `Progressão de cargas sustentada, peso oscilando dentro da faixa prevista e ausência de dor articular crônica.`,
     evaluationMetrics: 'Atingir o topo das repetições na primeira série dos exercícios principais para justificar adição de carga na próxima semana.',
     applied: true,
+  };
+}
+
+/**
+ * FASE: "Manter minha dieta atual" (§7 — usuário no comando).
+ * Mantém a dieta que o usuário JÁ faz: as calorias são DERIVADAS dos macros
+ * informados por Atwater (nunca digitadas) e os extremos são rejeitados pelo
+ * motor (validateUserTargets). O TEE do motor continua gravado como referência
+ * de estimativa para o check-in semanal comparar resposta.
+ */
+export function applyUserDietTargets(
+  profile: UserProfile,
+  userMacros: { proteinGrams: number; carbsGrams: number; fatGrams: number },
+): NutritionPlan {
+  const result = computeNutritionTargets({
+    goal: profile.goal,
+    sex: profile.gender,
+    weightKg: profile.weightKg,
+    heightCm: profile.heightCm,
+    ageYears: profile.age,
+    activityLevel: profile.activityLevel,
+    frequencyDaysPerWeek: profile.frequencyDays,
+  });
+
+  const validated = validateUserTargets(profile.weightKg, profile.gender, userMacros);
+
+  // Esqueleto de 4 refeições com metas proporcionais e SEM itens inventados:
+  // o usuário registra o que realmente comeu (itens livres + avulsas).
+  const mealShares = [0.25, 0.35, 0.2, 0.2];
+  const mealTargets = distributeMeals(
+    {
+      caloriesKcalPerDay: validated.caloriesKcal,
+      proteinGramsPerDay: validated.proteinGrams,
+      carbsGramsPerDay: validated.carbsGrams,
+      fatGramsPerDay: validated.fatGrams,
+    },
+    mealShares,
+  );
+
+  const mealNames = ['Café da manhã', 'Almoço', 'Lanche / pré-pós-treino', 'Jantar'];
+  const mealTimes = ['07:30', '12:30', '16:30', '20:30'];
+  const meals = mealTargets.map((t, i) => ({
+    id: `meal_user_${i + 1}`,
+    name: mealNames[i],
+    time: mealTimes[i],
+    targetCalories: t.caloriesKcal,
+    items: [],
+    completed: false,
+  }));
+
+  const delta = validated.caloriesKcal - result.teeKcalPerDay;
+  const dietStrategy = delta > 100 ? 'superavit' : delta < -100 ? 'deficit' : 'manutencao';
+
+  const targetMacros: MacroTarget = {
+    calories: validated.caloriesKcal,
+    proteinGrams: validated.proteinGrams,
+    carbsGrams: validated.carbsGrams,
+    fatGrams: validated.fatGrams,
+    fiberGrams: result.targets.fiberGramsPerDay,
+    waterMl: result.targets.waterMillilitersPerDay,
+  };
+
+  const bmrResult = estimateBmr({
+    weightKg: profile.weightKg,
+    heightCm: profile.heightCm,
+    ageYears: profile.age,
+    sex: profile.gender,
+  });
+  const exactAtwaterKcal =
+    userMacros.proteinGrams * 4 + userMacros.carbsGrams * 4 + userMacros.fatGrams * 9;
+
+  return {
+    bmr: Math.round(bmrResult.bmrKcalPerDay),
+    tdee: result.teeKcalPerDay,
+    targetMacros,
+    dietStrategy,
+    calorieDelta: delta,
+    meals,
+    hydrationTargetMl: targetMacros.waterMl,
+    audit: {
+      ...result.audit,
+      strategy: dietStrategy,
+      calorieDeltaKcalPerDay: delta,
+      proteinGramsPerKg: Math.round((validated.proteinGrams / profile.weightKg) * 100) / 100,
+      fatGramsPerKg: Math.round((validated.fatGrams / profile.weightKg) * 100) / 100,
+      roundingSlackKcal: Math.round(exactAtwaterKcal - validated.caloriesKcal),
+      warnings: ['Metas definidas pelo USUÁRIO (dieta atual mantida). O motor audita limites de segurança — não prescreve por cima.'],
+      energyMethod: 'definido_pelo_usuario',
+      formula: 'Atwater 4/4/9 sobre os macros informados pelo usuário',
+      limitations: `Calorias derivadas dos macros; energia estimada (TEE ${result.teeKcalPerDay} kcal) serve de referência para o check-in calibrar.`,
+    },
   };
 }

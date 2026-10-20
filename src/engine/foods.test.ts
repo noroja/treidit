@@ -95,7 +95,7 @@ describe('findSubstitutes — equivalência por papel, não por peso', () => {
     }
   });
 
-  it(' Gordura não sugere proteína: azeite ↔ itens de papel gordura', () => {
+  it(' Gordura não sugere proteína: azeite ⇔ itens de papel gordura', () => {
     const azeite = getFood('azeite_oliva');
     const subs = findSubstitutes(azeite, 8);
     for (const s of subs) {
@@ -142,7 +142,7 @@ describe('somatórios de refeição — o total sempre deriva dos itens', () => 
     const liar: MealItem = { id: 'x', name: 'x', portion: '1', calories: 999, protein: 1, carbs: 1, fat: 1 };
     assert.throws(() => validateItemEnergy(liar), (e: unknown) => e instanceof ValidationError);
     const honest: MealItem = { id: 'y', name: 'y', portion: '1', calories: 12, protein: 1, carbs: 1, fat: 1 };
-    assert.doesNotThrow(() => validateItemEnergy(honest)); // 4+4+9=17, folga 6 → 12 passa? |12-17|=5 ✓
+    assert.doesNotThrow(() => validateItemEnergy(honest)); // 4+4+9=17, folga 6 → 12 passa? |12-17|=5 âœ“
   });
 
   it('consumo do dia soma APENAS refeições completadas', () => {
@@ -155,11 +155,15 @@ describe('somatórios de refeição — o total sempre deriva dos itens', () => 
     assert.equal(consumed.proteinG, 60); // arredondado final
   });
 
-  it('mealVsTarget: delta sinalizado contra a meta (meta ≤ 0 rejeitada)', () => {
+  it('mealVsTarget: delta sinalizado contra a meta (negativa rejeitada; 0 = sem meta §6)', () => {
     const meal: PlannedMeal = { id: 'm', name: 'a', time: '07:30', targetCalories: 500, completed: false, items };
     const delta = mealVsTarget(meal);
-    assert.equal(delta.overKcal, -13); // 487 − 500
+    assert.equal(delta.overKcal, -13); // 487 vs 500
     assert.equal(delta.percentOfTarget, 97);
-    assert.throws(() => mealVsTarget({ ...meal, targetCalories: 0 }), ValidationError);
+    // Refeição avulsa (§6) nasce sem meta — não é exceção.
+    assert.doesNotThrow(() => mealVsTarget({ ...meal, targetCalories: 0 }));
+    assert.equal(mealVsTarget({ ...meal, targetCalories: 0 }).hasTarget, false);
+    // Meta negativa continua inválida.
+    assert.throws(() => mealVsTarget({ ...meal, targetCalories: -50 }), ValidationError);
   });
 });

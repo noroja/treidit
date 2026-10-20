@@ -58,7 +58,7 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
   const [fatigueScore, setFatigueScore] = useState<number>(recovery.fatigueScore || 2);
   const [stressLevel, setStressLevel] = useState<number>(2);
   const [jointDiscomfort, setJointDiscomfort] = useState<boolean>(false);
-  const [visualDensityNotes, setVisualDensityNotes] = useState<string>('MÃºsculo denso, boa definiÃ§Ã£o abdominal pela manhÃ£, vascularizaÃ§Ã£o aparente no treino.');
+  const [visualDensityNotes, setVisualDensityNotes] = useState<string>('Músculo denso, boa definição abdominal pela manhã, vascularização aparente no treino.');
 
   // Generated Report state
   const [report, setReport] = useState<WeeklyCheckinReport | null>(null);
@@ -111,19 +111,19 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
           title: data.title || 'Check-in Semanal Processado',
           status: data.status || 'manter',
           resposta: data.resposta || 'Dados registrados com sucesso.',
-          interpretacao: data.interpretacao || 'ProgressÃ£o sustentada conforme parÃ¢metros fisiolÃ³gicos.',
-          decisao: data.decisao || 'ManutenÃ§Ã£o do microciclo.',
+          interpretacao: data.interpretacao || 'Progressão sustentada conforme parâmetros fisiológicos.',
+          decisao: data.decisao || 'Manutenção do microciclo.',
           perguntasChave: data.perguntasChave || {
-            paraQuem: `Praticante nÃ­vel ${profile.experience}`,
+            paraQuem: `Praticante nível ${profile.experience}`,
             paraQue: 'Manter sobrecarga progressiva',
-            emQualMomento: 'Microciclo de consolidaÃ§Ã£o',
+            emQualMomento: 'Microciclo de consolidação',
           },
           methodologicalInsights: {
-            duduHaluch: 'TitulaÃ§Ã£o gradual e foco estrito na adesÃ£o antes de qualquer ajuste calÃ³rico.',
-            chrisAceto: 'Resposta visual e sustentaÃ§Ã£o de forÃ§a no espelho e nos aparelhos.',
-            belmiroDeSalles: 'Para quem? Para quÃª? Em qual momento? Volume ajustado Ã  capacidade de recuperaÃ§Ã£o.',
+            duduHaluch: 'Titulação gradual e foco estrito na adesão antes de qualquer ajuste calórico.',
+            chrisAceto: 'Resposta visual e sustentação de força no espelho e nos aparelhos.',
+            belmiroDeSalles: 'Para quem? Para quê? Em qual momento? Volume ajustado à capacidade de recuperação.',
           },
-          ajustesRecomendados: data.ajustesRecomendados || { caloriasDelta: 0, volumeDeltaSets: 0, focoCarboidrato: 'EstÃ¡vel' },
+          ajustesRecomendados: data.ajustesRecomendados || { caloriasDelta: 0, volumeDeltaSets: 0, focoCarboidrato: 'Estável' },
           applied: false,
         };
         setReport(fullReport);
@@ -166,7 +166,7 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-muted">
-                AvaliaÃ§Ã£o integrada: ComposiÃ§Ã£o corporal + Performance + NutriÃ§Ã£o + RecuperaÃ§Ã£o
+                Avaliação integrada: Composição corporal + Performance + Nutrição + Recuperação
               </p>
             </div>
           </div>
@@ -182,7 +182,7 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 text-xs">
           
-          {/* If report is already generated, show the synthesized Triad: RESPOSTA -> INTERPRETAÃ‡ÃƒO -> DECISÃƒO */}
+          {/* If report is already generated, show the synthesized Triad: RESPOSTA -> INTERPRETAÇÃO -> DECISÃO */}
           {report ? (
             <div className="space-y-5 animate-in fade-in duration-300">
               <div className="bg-lime/10 border border-lime/25 rounded-2xl p-5 space-y-3">
@@ -205,23 +205,23 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                   {/* 1. RESPOSTA */}
                   <div className="bg-panel/90 border border-elevated p-3.5 rounded-xl">
                     <span className="text-lime font-bold  text-[12.5px] block mb-1">
-                      1. RESPOSTA DO INDIVÃDUO (Dados Observados)
+                      1. RESPOSTA DO INDIVÍDUO (Dados Observados)
                     </span>
                     <p className="text-strong leading-relaxed">{report.resposta}</p>
                   </div>
 
-                  {/* 2. INTERPRETAÃ‡ÃƒO */}
+                  {/* 2. INTERPRETAÇÃO */}
                   <div className="bg-panel/90 border border-elevated p-3.5 rounded-xl">
                     <span className="text-lime-dim font-bold  text-[12.5px] block mb-1">
-                      2. INTERPRETAÃ‡ÃƒO FISIOLÃ“GICA (Conceito Haluch / Aceto / Belmiro)
+                      2. INTERPRETAÇÃO FISIOLÓGICA (Conceito Haluch / Aceto / Belmiro)
                     </span>
                     <p className="text-strong leading-relaxed">{report.interpretacao}</p>
                   </div>
 
-                  {/* 3. DECISÃƒO */}
+                  {/* 3. DECISÃO */}
                   <div className="bg-panel/90 border border-elevated p-3.5 rounded-xl">
                     <span className="text-lime-dim font-bold  text-[12.5px] block mb-1">
-                      3. DECISÃƒO PRÃTICA & CONDUTA
+                      3. DECISÃO PRÃTICA & CONDUTA
                     </span>
                     <p className="text-strong leading-relaxed">{report.decisao}</p>
                   </div>
@@ -231,19 +231,19 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                 <div className="bg-base p-4 rounded-xl border border-elevated/80 space-y-2">
                   <div className="text-[12.5px] font-bold text-strong   flex items-center gap-1.5">
                     <BrainCircuit className="w-4 h-4 text-lime" />
-                    TrÃ­ade de DecisÃ£o Belmiro de Salles
+                    Tríade de Decisão Belmiro de Salles
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[12.5px]">
                     <div className="bg-panel p-2.5 rounded-lg border border-elevated">
-                      <strong className="text-lime block mb-0.5">Â«Para quem?Â»</strong>
+                      <strong className="text-lime block mb-0.5">«Para quem?»</strong>
                       <span className="text-strong">{report.perguntasChave.paraQuem}</span>
                     </div>
                     <div className="bg-panel p-2.5 rounded-lg border border-elevated">
-                      <strong className="text-lime-dim block mb-0.5">Â«Para quÃª?Â»</strong>
+                      <strong className="text-lime-dim block mb-0.5">«Para quê?»</strong>
                       <span className="text-strong">{report.perguntasChave.paraQue}</span>
                     </div>
                     <div className="bg-panel p-2.5 rounded-lg border border-elevated">
-                      <strong className="text-lime-dim block mb-0.5">Â«Em qual momento?Â»</strong>
+                      <strong className="text-lime-dim block mb-0.5">«Em qual momento?»</strong>
                       <span className="text-strong">{report.perguntasChave.emQualMomento}</span>
                     </div>
                   </div>
@@ -252,7 +252,7 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                 {/* Methodological Insights Accordion */}
                 <div className="bg-base p-4 rounded-xl border border-elevated space-y-2">
                   <span className="text-[12.5px] font-bold text-strong   block">
-                    FundamentaÃ§Ã£o dos Especialistas
+                    Fundamentação dos Especialistas
                   </span>
                   <div className="space-y-1.5 text-[12.5px] text-strong">
                     <div>
@@ -274,11 +274,11 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                 <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
                   {appliedNotice ? (
                     <span className="text-xs text-lime font-bold flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4" /> DecisÃ£o aplicada e sincronizada no plano com sucesso!
+                      <CheckCircle2 className="w-4 h-4" /> Decisão aplicada e sincronizada no plano com sucesso!
                     </span>
                   ) : (
                     <span className="text-[12.5px] text-muted">
-                      Aplique esta decisÃ£o para atualizar as metas de treino e dieta do prÃ³ximo microciclo.
+                      Aplique esta decisão para atualizar as metas de treino e dieta do próximo microciclo.
                     </span>
                   )}
 
@@ -294,7 +294,7 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                       className="flex-1 sm:flex-none px-5 py-2.5 bg-lime hover:bg-lime text-base font-bold text-xs rounded-xl transition   active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Check className="w-4 h-4 stroke-[3]" />
-                      <span>Aplicar DecisÃ£o ao Plano</span>
+                      <span>Aplicar Decisão ao Plano</span>
                     </button>
                   </div>
                 </div>
@@ -304,14 +304,14 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
             /* Check-in Input Form */
             <form onSubmit={handleSubmitCheckin} className="space-y-5">
               
-              {/* Pillar 1: ComposiÃ§Ã£o Corporal */}
+              {/* Pillar 1: Composição Corporal */}
               <div className="bg-base/70 p-4 rounded-xl border border-elevated space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white flex items-center gap-2 text-xs ">
                     <Scale className="w-4 h-4 text-lime" />
-                    1. ComposiÃ§Ã£o Corporal (Peso, Medidas & Espelho)
+                    1. Composição Corporal (Peso, Medidas & Espelho)
                   </h3>
-                  <span className="text-[11px] text-muted">ReferÃªncia: Haluch & Aceto</span>
+                  <span className="text-[11px] text-muted">Referência: Haluch & Aceto</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -327,7 +327,7 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="text-muted block mb-1">Cintura AbdÃ´men (cm)</label>
+                    <label className="text-muted block mb-1">Cintura Abdômen (cm)</label>
                     <input
                       type="number"
                       step="0.5"
@@ -343,7 +343,7 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                       type="text"
                       value={visualDensityNotes}
                       onChange={(e) => setVisualDensityNotes(e.target.value)}
-                      placeholder="Ex: FÃ­sico cheio, vascularizaÃ§Ã£o boa"
+                      placeholder="Ex: Físico cheio, vascularização boa"
                       className="w-full bg-panel border border-line-strong rounded-lg p-2 text-white focus:border-lime focus:outline-none"
                     />
                   </div>
@@ -357,24 +357,24 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                     <Dumbbell className="w-4 h-4 text-lime-dim" />
                     2. Performance de Treino (Carga, Reps & RIR)
                   </h3>
-                  <span className="text-[11px] text-muted">ReferÃªncia: Belmiro de Salles</span>
+                  <span className="text-[11px] text-muted">Referência: Belmiro de Salles</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="text-muted block mb-1">ProgressÃ£o de ForÃ§a</label>
+                    <label className="text-muted block mb-1">Progressão de Força</label>
                     <select
                       value={strengthProgression}
                       onChange={(e) => setStrengthProgression(e.target.value as any)}
                       className="w-full bg-panel border border-line-strong rounded-lg p-2 text-white focus:border-lime focus:outline-none"
                     >
-                      <option value="aumentou">Subiu carga / repetiÃ§Ãµes</option>
-                      <option value="manteve">Manteve estÃ¡vel</option>
-                      <option value="caiu">Queda de rendimento / forÃ§a</option>
+                      <option value="aumentou">Subiu carga / repetições</option>
+                      <option value="manteve">Manteve estável</option>
+                      <option value="caiu">Queda de rendimento / força</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-muted block mb-1">RIR MÃ©dio (Falha: 0)</label>
+                    <label className="text-muted block mb-1">RIR Médio (Falha: 0)</label>
                     <input
                       type="number"
                       step="0.1"
@@ -397,25 +397,25 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                       }`}
                     >
                       <AlertTriangle className="w-3.5 h-3.5" />
-                      <span>{jointDiscomfort ? 'Sim, dor relatada' : 'Sem dor nas articulaÃ§Ãµes'}</span>
+                      <span>{jointDiscomfort ? 'Sim, dor relatada' : 'Sem dor nas articulações'}</span>
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* Pillar 3: NutriÃ§Ã£o & AdesÃ£o */}
+              {/* Pillar 3: Nutrição & Adesão */}
               <div className="bg-base/70 p-4 rounded-xl border border-elevated space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white flex items-center gap-2 text-xs ">
                     <Utensils className="w-4 h-4 text-lime-dim" />
-                    3. NutriÃ§Ã£o & AdesÃ£o DietÃ©tica
+                    3. Nutrição & Adesão Dietética
                   </h3>
-                  <span className="text-[11px] text-muted">ReferÃªncia: Dudu Haluch & Chris Aceto</span>
+                  <span className="text-[11px] text-muted">Referência: Dudu Haluch & Chris Aceto</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="text-muted block mb-1">Calorias MÃ©dias / Dia</label>
+                    <label className="text-muted block mb-1">Calorias Médias / Dia</label>
                     <input
                       type="number"
                       value={avgDailyCalories}
@@ -424,21 +424,21 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="text-muted block mb-1">AdesÃ£o (1 a 5)</label>
+                    <label className="text-muted block mb-1">Adesão (1 a 5)</label>
                     <select
                       value={adherenceScore}
                       onChange={(e) => setAdherenceScore(parseInt(e.target.value))}
                       className="w-full bg-panel border border-line-strong rounded-lg p-2 text-white focus:border-lime focus:outline-none"
                     >
                       <option value={5}>5 (100% no plano)</option>
-                      <option value={4}>4 (AdesÃ£o muito boa)</option>
+                      <option value={4}>4 (Adesão muito boa)</option>
                       <option value={3}>3 (Moderada)</option>
-                      <option value={2}>2 (VÃ¡rios deslizes)</option>
+                      <option value={2}>2 (Vários deslizes)</option>
                       <option value={1}>1 (Desconectou do plano)</option>
                     </select>
                   </div>
                   <div>
-                    <label className="text-muted block mb-1">NÃ­vel de Fome</label>
+                    <label className="text-muted block mb-1">Nível de Fome</label>
                     <select
                       value={hungerLevel}
                       onChange={(e) => setHungerLevel(e.target.value as any)}
@@ -464,19 +464,19 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
                 </div>
               </div>
 
-              {/* Pillar 4: RecuperaÃ§Ã£o */}
+              {/* Pillar 4: Recuperação */}
               <div className="bg-base/70 p-4 rounded-xl border border-elevated space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white flex items-center gap-2 text-xs ">
                     <HeartPulse className="w-4 h-4 text-lime-dim" />
-                    4. RecuperaÃ§Ã£o (Sono, Fadiga & Estresse)
+                    4. Recuperação (Sono, Fadiga & Estresse)
                   </h3>
-                  <span className="text-[11px] text-muted">ReferÃªncia: Belmiro de Salles</span>
+                  <span className="text-[11px] text-muted">Referência: Belmiro de Salles</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-muted block mb-1">Sono MÃ©dio (Horas)</label>
+                    <label className="text-muted block mb-1">Sono Médio (Horas)</label>
                     <input
                       type="number"
                       step="0.5"

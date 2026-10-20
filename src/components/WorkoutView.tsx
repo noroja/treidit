@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Dumbbell, Play, Trophy, Sparkles, Clock, AlertTriangle, CheckCircle, Info, ChevronRight, BarChart3, Plus, TrendingUp, ShieldAlert, Target } from 'lucide-react';
-import { WorkoutProgram, WorkoutRoutine, WorkoutSessionLog } from '../types';
+import { Dumbbell, Play, Trophy, Sparkles, Clock, AlertTriangle, CheckCircle, Info, ChevronRight, BarChart3, Plus, TrendingUp, ShieldAlert, Target, PencilLine, MessageSquareHeart } from 'lucide-react';
+import { WorkoutProgram, WorkoutRoutine, WorkoutSessionLog, WorkoutFeedback } from '../types';
 import {
   lastPerformanceFor,
   suggestProgression,
@@ -19,19 +19,25 @@ const ACTION_LABEL: Record<ProgressionAction, string> = {
 interface WorkoutViewProps {
   program: WorkoutProgram;
   workoutLogs: WorkoutSessionLog[];
+  workoutFeedback: WorkoutFeedback[];
   onStartRoutine: (routineIndex: number) => void;
   onOpenAi: () => void;
   onOpenAdaptive: () => void;
   onOpenExerciseLibrary?: () => void;
+  onOpenCustomWorkout: () => void;
+  onOpenWorkoutFeedback: () => void;
 }
 
 export const WorkoutView: React.FC<WorkoutViewProps> = ({
   program,
   workoutLogs,
+  workoutFeedback,
   onStartRoutine,
   onOpenAi,
   onOpenAdaptive,
   onOpenExerciseLibrary,
+  onOpenCustomWorkout,
+  onOpenWorkoutFeedback,
 }) => {
   const [selectedRoutineIndex, setSelectedRoutineIndex] = useState(0);
   const activeRoutine = program.routines[selectedRoutineIndex] || program.routines[0];
@@ -60,6 +66,12 @@ export const WorkoutView: React.FC<WorkoutViewProps> = ({
   );
 
   const totalExercises = activeRoutine ? activeRoutine.exercises.length : 0;
+
+  // Feedback do atleta sobre o treino em uso (registro, não prescrição).
+  const feedbackAvg =
+    workoutFeedback.length > 0
+      ? workoutFeedback.reduce((a, f) => a + f.rating, 0) / workoutFeedback.length
+      : 0;
   const totalWeeklySets = program.routines.reduce(
     (acc, r) => acc + r.exercises.reduce((exAcc, ex) => exAcc + ex.workingSets, 0),
     0
@@ -86,6 +98,22 @@ export const WorkoutView: React.FC<WorkoutViewProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={onOpenCustomWorkout}
+              className="px-3.5 py-2 rounded-xl bg-lime/10 hover:bg-lime/20 border border-lime/35 text-xs font-bold text-lime transition cursor-pointer flex items-center gap-1.5 active:scale-95"
+            >
+              <PencilLine className="w-4 h-4" />
+              {program.splitType === 'personalizado' ? 'Editar meu treino' : 'Usar meu treino atual'}
+            </button>
+
+            <button
+              onClick={onOpenWorkoutFeedback}
+              className="px-3.5 py-2 rounded-xl bg-elevated hover:bg-line-strong border border-line-strong text-xs font-semibold text-strong transition cursor-pointer flex items-center gap-1.5 active:scale-95"
+            >
+              <MessageSquareHeart className="w-4 h-4 text-lime" />
+              Feedback{feedbackAvg > 0 ? ` · ★ ${feedbackAvg.toFixed(1)} (${workoutFeedback.length})` : ''}
+            </button>
+
             {onOpenExerciseLibrary && (
               <button
                 onClick={onOpenExerciseLibrary}

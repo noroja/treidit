@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   Flame, Utensils, Droplets, Plus, Check, CheckCircle2, Circle,
   Sparkles, Info, ShieldCheck, HeartPulse, BatteryCharging, Smile,
-  Repeat, Pencil, Trash2
+  Repeat, Pencil, Trash2, ChefHat
 } from 'lucide-react';
 import { NutritionPlan, DailyNutritionLog, UserProfile, MealItem } from '../types';
 import { sumMealItems, mealVsTarget } from '../engine/meals';
@@ -23,6 +23,8 @@ interface NutritionViewProps {
   onToggleMealCompleted: (mealId: string) => void;
   onAddWater: (amountMl: number) => void;
   onUpdateMealItems: (mealId: string, items: MealItem[]) => void;
+  onAddFreeMeal: () => void;
+  onOpenOwnDiet: () => void;
   onOpenAi: () => void;
   onOpenAdaptive: () => void;
 }
@@ -35,6 +37,8 @@ export const NutritionView: React.FC<NutritionViewProps> = ({
   onToggleMealCompleted,
   onAddWater,
   onUpdateMealItems,
+  onAddFreeMeal,
+  onOpenOwnDiet,
   onOpenAi,
   onOpenAdaptive,
 }) => {
@@ -218,14 +222,34 @@ export const NutritionView: React.FC<NutritionViewProps> = ({
       {/* Refeições Estruturadas do Dia */}
       <div className="bg-panel border border-elevated rounded-2xl p-5  space-y-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Utensils className="w-4 h-4 text-lime" />
-              Distribuição de Refeições Prescritas
-            </h2>
-            <p className="text-xs text-muted mt-0.5">
-              Alimentos nutritivos distribuídos para maximizar a síntese proteica (MPS) e níveis de energia estáveis.
-            </p>
+          <div className="flex-1 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+            <div>
+              <h2 className="text-base font-bold text-white flex items-center gap-2">
+                <Utensils className="w-4 h-4 text-lime" />
+                {nutrition.audit?.energyMethod === 'definido_pelo_usuario' ? 'Minha Dieta (registrada por mim)' : 'Distribuição de Refeições Prescritas'}
+              </h2>
+              <p className="text-xs text-muted mt-0.5">
+                {nutrition.audit?.energyMethod === 'definido_pelo_usuario'
+                  ? 'Metas mantidas pelo USUÁRIO · o motor audita limites e registra o que você realmente comeu.'
+                  : 'Alimentos nutritivos distribuídos para maximizar a síntese proteica (MPS) e níveis de energia estáveis.'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={onAddFreeMeal}
+                className="px-3 py-1.5 rounded-xl bg-lime/10 hover:bg-lime/20 border border-lime/35 text-[11.5px] font-bold text-lime transition cursor-pointer flex items-center gap-1.5 active:scale-95 whitespace-nowrap"
+                title="Registrar uma refeição diferente do plano (§6)"
+              >
+                <Plus className="w-3.5 h-3.5" /> Refeição avulsa
+              </button>
+              <button
+                onClick={onOpenOwnDiet}
+                className="px-3 py-1.5 rounded-xl bg-elevated hover:bg-line-strong border border-line-strong text-[11.5px] font-semibold text-strong transition cursor-pointer flex items-center gap-1.5 active:scale-95 whitespace-nowrap"
+                title="Manter a dieta que você já usa (auditoria determinística)"
+              >
+                <ChefHat className="w-3.5 h-3.5 text-lime" /> Minha dieta atual
+              </button>
+            </div>
           </div>
         </div>
 

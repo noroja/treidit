@@ -15,7 +15,8 @@ import {
   RecoveryLog, 
   AdaptiveAdjustment,
   WeeklyCheckinReport,
-  AppNotification
+  AppNotification,
+  WorkoutFeedback
 } from './types';
 import { 
   INITIAL_USER_PROFILE, 
@@ -28,8 +29,8 @@ import {
   INITIAL_ADAPTIVE_ADJUSTMENTS,
   INITIAL_NOTIFICATIONS
 } from './data/initialData';
-import { generateNutritionPlan, generateWorkoutProgram, runAdaptiveAudit } from './utils/calculations';
-import { computeConsumedFromMeals } from './engine/meals';
+import { generateNutritionPlan, generateWorkoutProgram, runAdaptiveAudit, applyUserDietTargets } from './utils/calculations';
+import { computeConsumedFromMeals, createFreeMeal } from './engine/meals';
 
 import { Navbar } from './components/Navbar';
 import { BottomNav, TabType } from './components/BottomNav';
@@ -47,6 +48,9 @@ import { AICoachModal } from './components/AICoachModal';
 import { ProfileOnboardingModal } from './components/ProfileOnboardingModal';
 import { WeeklyCheckinModal } from './components/WeeklyCheckinModal';
 import { ExerciseLibraryModal } from './components/ExerciseLibraryModal';
+import { CustomWorkoutModal } from './components/CustomWorkoutModal';
+import { WorkoutFeedbackModal } from './components/WorkoutFeedbackModal';
+import { OwnDietModal } from './components/OwnDietModal';
 
 export default function App() {
   // Navigation State
@@ -60,6 +64,9 @@ export default function App() {
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [showCheckinModal, setShowCheckinModal] = useState(false);
   const [showExerciseLibrary, setShowExerciseLibrary] = useState(false);
+  const [showCustomWorkoutModal, setShowCustomWorkoutModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showOwnDietModal, setShowOwnDietModal] = useState(false);
 
   // App Domain State with LocalStorage Persistence
   const [profile, setProfile] = useState<UserProfile>(() => {
@@ -143,6 +150,16 @@ export default function App() {
     }
   });
 
+  // §7: treino PRÓPRIO do usuário + feedback do atleta sobre ele (registro MEDIDO).
+  const [workoutFeedback, setWorkoutFeedback] = useState<WorkoutFeedback[]>(() => {
+    try {
+      const saved = localStorage.getItem('kinetic_workout_feedback');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // Save to localStorage on state changes
   useEffect(() => {
     localStorage.setItem('kinetic_profile', JSON.stringify(profile));
@@ -176,6 +193,10 @@ export default function App() {
     localStorage.setItem('kinetic_notifications', JSON.stringify(notifications));
   }, [notifications]);
 
+  useEffect(() => {
+    localStorage.setItem('kinetic_workout_feedback', JSON.stringify(workoutFeedback));
+  }, [workoutFeedback]);
+
   // Handlers for notifications
   const handleMarkNotificationRead = (id: string) => {
     setNotifications((prev) =>
@@ -201,6 +222,42 @@ export default function App() {
     setAdjustments((prev) => [latestAudit, ...prev]);
   };
 
+  // §7: TREINO PRÓPRIO — aplica o programa registrado pelo usuário. O motor
+  // continua auditando (progressão por histórico, planejado × realizado).
+  const handleApplyCustomProgram = (custom: WorkoutProgram) => {
+    setProgram(custom);
+    setShowCustomWorkoutModal(false);
+  };
+
+  // §7: Registro de feedback do atleta sobre o treino em uso (1-5 + dor + nota).
+  const handleAddWorkoutFeedback = (feedback: WorkoutFeedback) => {
+    setWorkoutFeedback((prev) => [feedback, ...prev].slice(0, 50));
+    setShowFeedbackModal(false);
+  };
+
+  // §7: DIETA PRÓPRIA — metas do usuário validadas pelo motor (Atwater, pisos).
+  const handleApplyUserDiet = (macros: { proteinGrams: number; carbsGrams: number; fatGrams: number }) => {
+    setNutrition(applyUserDietTargets(profile, macros));
+    // Consumo do dia re-derivado das refeições (agora vazias) — motor de refeições.
+    setTodayNutrition((prev) => ({
+      ...prev,
+      consumedCalories: 0,
+      consumedProtein: 0,
+      consumedCarbs: 0,
+      consumedFat: 0,
+    }));
+    setShowOwnDietModal(false);
+  };
+
+  // §6: REFEIÇÃO AVULSA — registro livre do que saiu do plano.
+  const handleAddFreeMeal = () => {
+    const id = `meal_free_${Date.now()}`;
+    setNutrition((prev) => ({
+      ...prev,
+      meals: [...prev.meals, createFreeMeal(id)],
+    }));
+  };
+
   const handleAddAnthropometry = (newRecord: Anthropometry) => {
     const updated = [newRecord, ...anthropometry];
     setAnthropometry(updated);
@@ -219,18 +276,23 @@ export default function App() {
   const handleSaveProfile = (updatedProfile: UserProfile, anthropometryUpdate?: Partial<Anthropometry>) => {
     setProfile(updatedProfile);
 
-    // Regenerate program & nutrition tailored to new preferences/split
+    // Regenerate program & nutrition tailored to new preferences/split.
+    // §7: se o usuário já definiu o próprio treino ou a própria dieta, ele fica
+    // no comando — o perfil gerado não sobrescreve o que ele manteve.
+    const keepCustomProgram = program.splitType === 'personalizado';
+    const keepUserDiet = nutrition.audit?.energyMethod === 'definido_pelo_usuario';
     const newProgram = generateWorkoutProgram(updatedProfile);
     const newNutrition = generateNutritionPlan(updatedProfile);
-    setProgram(newProgram);
-    setNutrition(newNutrition);
+    const nutritionForAudit = keepUserDiet ? nutrition : newNutrition;
+    setProgram(keepCustomProgram ? program : newProgram);
+    setNutrition(nutritionForAudit);
 
     if (anthropometryUpdate && anthropometry.length > 0) {
       const topRecord = { ...anthropometry[0], ...anthropometryUpdate };
       setAnthropometry([topRecord, ...anthropometry.slice(1)]);
     }
 
-    const latestAudit = runAdaptiveAudit(updatedProfile, anthropometry, workoutLogs, newNutrition, 0.9);
+    const latestAudit = runAdaptiveAudit(updatedProfile, anthropometry, workoutLogs, nutritionForAudit, 0.9);
     setAdjustments((prev) => [latestAudit, ...prev]);
   };
 
@@ -421,10 +483,13 @@ export default function App() {
           <WorkoutView
             program={program}
             workoutLogs={workoutLogs}
+            workoutFeedback={workoutFeedback}
             onStartRoutine={handleStartWorkout}
             onOpenAi={() => setShowAiModal(true)}
             onOpenAdaptive={() => setShowAdaptiveModal(true)}
             onOpenExerciseLibrary={() => setShowExerciseLibrary(true)}
+            onOpenCustomWorkout={() => setShowCustomWorkoutModal(true)}
+            onOpenWorkoutFeedback={() => setShowFeedbackModal(true)}
           />
         )}
 
@@ -437,6 +502,8 @@ export default function App() {
             onToggleMealCompleted={handleToggleMealCompleted}
             onAddWater={handleQuickAddWater}
             onUpdateMealItems={handleUpdateMealItems}
+            onAddFreeMeal={handleAddFreeMeal}
+            onOpenOwnDiet={() => setShowOwnDietModal(true)}
             onOpenAi={() => setShowAiModal(true)}
             onOpenAdaptive={() => setShowAdaptiveModal(true)}
           />
@@ -576,6 +643,29 @@ export default function App() {
           recovery={recovery}
           onClose={() => setShowCheckinModal(false)}
           onApplyCheckinReport={handleApplyCheckinReport}
+        />
+      )}
+
+      {/* §7: Treino PRÓPRIO do usuário + feedback do atleta */}
+      {showCustomWorkoutModal && (
+        <CustomWorkoutModal
+          onClose={() => setShowCustomWorkoutModal(false)}
+          onApplyProgram={handleApplyCustomProgram}
+        />
+      )}
+      {showFeedbackModal && (
+        <WorkoutFeedbackModal
+          history={workoutFeedback}
+          onClose={() => setShowFeedbackModal(false)}
+          onAddFeedback={handleAddWorkoutFeedback}
+        />
+      )}
+      {showOwnDietModal && (
+        <OwnDietModal
+          nutrition={nutrition}
+          profile={profile}
+          onClose={() => setShowOwnDietModal(false)}
+          onApplyUserDiet={handleApplyUserDiet}
         />
       )}
     </div>
