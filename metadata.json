@@ -1,0 +1,6 @@
+{
+  "name": "KINETIC - Treino, Nutrição e Acompanhamento Adaptativo",
+  "description": "Aplicativo de alta performance para musculação, nutrição individualizada e acompanhamento adaptativo orientado por dados e IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
