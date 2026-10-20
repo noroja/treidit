@@ -1,3 +1,4 @@
+﻿import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import React, { useMemo, useState } from 'react';
 import { X, Search, Repeat, Plus, ScanLine } from 'lucide-react';
 import type { MealItem } from '../types';
@@ -16,7 +17,7 @@ type PickerMode = 'substituir' | 'adicionar' | 'porcao';
 interface SubstituteFoodModalProps {
   mode: PickerMode;
   mealName: string;
-  /** Item original (substituir / porção). Opcional: base para equivalências. */
+  /** Item original (substituir / porÃ§Ã£o). Opcional: base para equivalÃªncias. */
   targetItem?: MealItem;
   onClose: () => void;
   /** Item pronto para o chamador aplicar (substituir/substituir por/adicionar). */
@@ -24,7 +25,7 @@ interface SubstituteFoodModalProps {
 }
 
 const ROLE_CHIP_LABEL: Record<'proteina' | 'carboidrato' | 'vegetal' | 'gordura', string> = {
-  proteina: 'Proteína',
+  proteina: 'ProteÃ­na',
   carboidrato: 'Carbo',
   vegetal: 'Vegetal',
   gordura: 'Gordura',
@@ -68,7 +69,7 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
     return 100;
   });
 
-  // Modo porção: item já vem pré-selecionado do banco (chamador garante foodId).
+  // Modo porÃ§Ã£o: item jÃ¡ vem prÃ©-selecionado do banco (chamador garante foodId).
   React.useEffect(() => {
     if (mode === 'porcao' && targetItem?.foodId) {
       setSelectedFoodId(targetItem.foodId);
@@ -76,7 +77,7 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
     }
   }, [mode, targetItem]);
 
-  // Equivalências diretas (substituir com foodId): opções do motor primeiro.
+  // EquivalÃªncias diretas (substituir com foodId): opÃ§Ãµes do motor primeiro.
   const sugeridas = useMemo(() => {
     if (mode === 'substituir' && targetItem?.foodId) {
       try {
@@ -129,11 +130,13 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
     });
   };
 
-  const title = mode === 'substituir' ? 'Substituir alimento' : mode === 'adicionar' ? 'Adicionar alimento' : 'Ajustar porção';
+  const title = mode === 'substituir' ? 'Substituir alimento' : mode === 'adicionar' ? 'Adicionar alimento' : 'Ajustar porÃ§Ã£o';
+
+  useLockBodyScroll(true);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-hidden">
-      <div className="bg-panel border border-line-strong rounded-2xl w-full max-w-lg flex flex-col max-h-[92vh]">
+      <div className="bg-panel border border-line-strong rounded-2xl w-full max-w-lg flex flex-col max-h-modal">
         {/* Header */}
         <div className="flex items-start justify-between p-5 pb-3">
           <div>
@@ -158,10 +161,10 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
           </button>
         </div>
 
-        {/* Equivalências sugeridas pelo motor */}
+        {/* EquivalÃªncias sugeridas pelo motor */}
         {sugeridas && sugeridas.length > 0 && (
           <div className="px-5 pb-3 space-y-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-faint">Equivalências (mesma função, kcal aproximada)</span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-faint">EquivalÃªncias (mesma funÃ§Ã£o, kcal aproximada)</span>
             {sugeridas.map((s) => (
               <button
                 key={s.food.id}
@@ -178,7 +181,7 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
                 <div>
                   <span className="text-xs font-semibold text-strong block">{s.food.name}</span>
                   <span className="text-[12.5px] text-muted font-mono">
-                    {s.suggestedGrams}g · {s.portion.caloriesKcal} kcal · {s.portion.proteinG}g P
+                    {s.suggestedGrams}g Â· {s.portion.caloriesKcal} kcal Â· {s.portion.proteinG}g P
                     <span className={s.proteinDeltaG >= 0 ? 'text-lime-dim' : 'text-danger'}>
                       {' '}({s.proteinDeltaG >= 0 ? '+' : ''}{s.proteinDeltaG}g P)
                     </span>
@@ -198,7 +201,7 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar alimento…"
+                placeholder="Buscar alimentoâ€¦"
                 className="field w-full pl-9"
               />
             </div>
@@ -220,11 +223,11 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
           </div>
         )}
 
-        {/* Lista de alimentos (rolável) */}
+        {/* Lista de alimentos (rolÃ¡vel) */}
         {mode !== 'porcao' && (
           <div className="flex-1 overflow-y-auto px-5 space-y-1.5 py-2">
             {visibleFoods.length === 0 && (
-              <p className="text-xs text-muted text-center py-6">Nenhum alimento na base curada. A tabela cobre os alimentos comuns do plano (TACO/USDA/rótulo).</p>
+              <p className="text-xs text-muted text-center py-6">Nenhum alimento na base curada. A tabela cobre os alimentos comuns do plano (TACO/USDA/rÃ³tulo).</p>
             )}
             {visibleFoods.map((f) => {
               const kcal100 = foodKcalPer100g(f);
@@ -241,7 +244,7 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
                   <div>
                     <span className="text-xs font-semibold text-strong block">{f.name}</span>
                     <span className="text-[12.5px] text-muted font-mono">
-                      por 100g: {kcal100} kcal · {f.proteinPer100g}g P · {f.carbsPer100g}g C · {f.fatPer100g}g F
+                      por 100g: {kcal100} kcal Â· {f.proteinPer100g}g P Â· {f.carbsPer100g}g C Â· {f.fatPer100g}g F
                     </span>
                   </div>
                   <span className="text-[11px] text-faint shrink-0 ml-2">{f.source}</span>
@@ -251,22 +254,22 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
           </div>
         )}
 
-        {/* Porção + preview + confirmar */}
+        {/* PorÃ§Ã£o + preview + confirmar */}
         <div className="p-5 pt-3 border-t border-elevated/60 space-y-3">
           {selectedFood && (            <div className="bg-base/70 border border-elevated rounded-xl p-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-lime-dim">{selectedFood.name}</span>
                 <span className="text-[12.5px] text-faint font-mono">
-                  {foodRole(selectedFood.group)} · {selectedFood.source}
+                  {foodRole(selectedFood.group)} Â· {selectedFood.source}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setGrams((g) => Math.max(5, g - 10))}
                   className="w-8 h-8 rounded-lg bg-elevated text-strong hover:bg-line-strong transition cursor-pointer font-bold"
-                  aria-label="Reduzir porção"
+                  aria-label="Reduzir porÃ§Ã£o"
                 >
-                  −
+                  âˆ’
                 </button>
                 <input
                   type="number"
@@ -282,7 +285,7 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
                 <button
                   onClick={() => setGrams((g) => Math.min(2000, g + 10))}
                   className="w-8 h-8 rounded-lg bg-elevated text-strong hover:bg-line-strong transition cursor-pointer font-bold"
-                  aria-label="Aumentar porção"
+                  aria-label="Aumentar porÃ§Ã£o"
                 >
                   +
                 </button>
@@ -290,8 +293,8 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
               {preview && (
                 <p className="text-[12.5px] text-muted font-mono mt-2 text-center">
                   <span className="text-lime font-bold">{preview.caloriesKcal} kcal</span>
-                  {' · '}{preview.proteinG}g P · {preview.carbsG}g C · {preview.fatG}g F
-                  {preview.fiberG > 0 && ` · ${preview.fiberG}g fibra`}
+                  {' Â· '}{preview.proteinG}g P Â· {preview.carbsG}g C Â· {preview.fatG}g F
+                  {preview.fiberG > 0 && ` Â· ${preview.fiberG}g fibra`}
                 </p>
               )}
             </div>
@@ -302,7 +305,7 @@ export const SubstituteFoodModal: React.FC<SubstituteFoodModalProps> = ({
             disabled={!selectedFood || !preview}
             className={`btn-lime w-full py-2.5 ${!selectedFood || !preview ? 'opacity-40 pointer-events-none' : ''}`}
           >
-            {mode === 'adicionar' ? 'Adicionar à refeição' : mode === 'porcao' ? 'Salvar porção' : 'Substituir alimento'}
+            {mode === 'adicionar' ? 'Adicionar Ã  refeiÃ§Ã£o' : mode === 'porcao' ? 'Salvar porÃ§Ã£o' : 'Substituir alimento'}
           </button>
         </div>
       </div>

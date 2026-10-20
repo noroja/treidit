@@ -1,3 +1,4 @@
+﻿import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -37,6 +38,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
 }) => {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [sessionActive, setSessionActive] = useState(true);
+
+  useLockBodyScroll(true);
 
   const [restRemaining, setRestRemaining] = useState(0);
   const [restTotal, setRestTotal] = useState(90);
@@ -79,6 +82,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   useEffect(() => {
     if (!sessionActive) return;
     const interval = setInterval(() => setElapsedSeconds((prev) => prev + 1), 1000);
+
     return () => clearInterval(interval);
   }, [sessionActive]);
 
@@ -175,7 +179,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
       exercises: exercisesState,
       perceivedEffortRPE: perceivedRPE,
       jointPainReported,
-      notes: sessionNotes || 'Treino concluído conforme prescrição.',
+      notes: sessionNotes || 'Treino concluÃ­do conforme prescriÃ§Ã£o.',
       totalVolumeLoadKg: totalVolumeLoad,
     };
     onFinishWorkout(log);
@@ -186,7 +190,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-base">
-      {/* Barra superior da sessão */}
+      {/* Barra superior da sessÃ£o */}
       <div className="sticky top-0 z-20 border-b border-line bg-base/95 backdrop-blur-md">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between gap-3">
@@ -197,7 +201,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
               <div className="min-w-0">
                 <div className="truncate text-[14px] font-semibold text-ink">{routine.name.split(':').slice(-1)[0].trim()}</div>
                 <div className="text-[12.5px] text-muted">
-                  {totalCompletedSets} de {totalSets} séries · {progress}%
+                  {totalCompletedSets} de {totalSets} sÃ©ries Â· {progress}%
                 </div>
               </div>
             </div>
@@ -210,8 +214,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
               <button
                 onClick={() => setSessionActive((v) => !v)}
                 className="icon-btn"
-                title={sessionActive ? 'Pausar sessão' : 'Retomar sessão'}
-                aria-label={sessionActive ? 'Pausar sessão' : 'Retomar sessão'}
+                title={sessionActive ? 'Pausar sessÃ£o' : 'Retomar sessÃ£o'}
+                aria-label={sessionActive ? 'Pausar sessÃ£o' : 'Retomar sessÃ£o'}
               >
                 {sessionActive ? <Timer className="h-[18px] w-[18px]" /> : <Play className="h-[18px] w-[18px]" />}
               </button>
@@ -246,7 +250,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                   <div className="min-w-0">
                     <h2 className="text-[15px] font-semibold leading-snug text-ink">{ex.exerciseName}</h2>
                     <p className="mt-1 text-[13px] text-muted">
-                      {ex.sets.length} séries · {definition?.repsTarget || '8-10'} reps · {definition?.restSeconds || 90}s de descanso
+                      {ex.sets.length} sÃ©ries Â· {definition?.repsTarget || '8-10'} reps Â· {definition?.restSeconds || 90}s de descanso
                     </p>
                   </div>
                   <span className={`metric shrink-0 rounded-full px-2 py-1 text-[12.5px] font-medium ${doneSets === ex.sets.length ? 'bg-lime/12 text-lime' : 'bg-elevated text-muted'}`}>
@@ -263,10 +267,10 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                   </button>
                   <span className="text-[11.5px] text-faint">
                     {previousSet
-                      ? `Última vez: ${formatLoad(previousSet.weightKg)} kg × ${previousSet.repsCompleted}`
+                      ? `Ãšltima vez: ${formatLoad(previousSet.weightKg)} kg Ã— ${previousSet.repsCompleted}`
                       : definition?.personalRecord
-                        ? `Melhor: ${formatLoad(definition.personalRecord.weightKg)} kg × ${definition.personalRecord.reps}`
-                        : 'Primeira vez neste exercício'}
+                        ? `Melhor: ${formatLoad(definition.personalRecord.weightKg)} kg Ã— ${definition.personalRecord.reps}`
+                        : 'Primeira vez neste exercÃ­cio'}
                   </span>
                 </div>
 
@@ -285,7 +289,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                     <div key={setIdx} className="set-row" data-done={set.completed}>
                       <button
                         onClick={() => handleToggleSetComplete(exIdx, setIdx, definition?.restSeconds || 90)}
-                        aria-label={set.completed ? `Desmarcar série ${setIdx + 1}` : `Concluir série ${setIdx + 1}`}
+                        aria-label={set.completed ? `Desmarcar sÃ©rie ${setIdx + 1}` : `Concluir sÃ©rie ${setIdx + 1}`}
                         className={`flex h-8 w-8 items-center justify-center rounded-full border transition ${
                           set.completed
                             ? 'border-lime bg-lime text-lime-ink'
@@ -302,10 +306,10 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                       <span className="min-w-0 text-[12.5px] text-faint">
                         {previousSet ? (
                           <>
-                            <span className="metric text-strong">{formatLoad(previousSet.weightKg)}</span> kg · {previousSet.repsCompleted} reps
+                            <span className="metric text-strong">{formatLoad(previousSet.weightKg)}</span> kg Â· {previousSet.repsCompleted} reps
                           </>
                         ) : (
-                          <span className="text-faint">—</span>
+                          <span className="text-faint">â€”</span>
                         )}
                       </span>
 
@@ -313,7 +317,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                         type="number"
                         inputMode="decimal"
                         step="0.5"
-                        aria-label={`Carga da série ${setIdx + 1}`}
+                        aria-label={`Carga da sÃ©rie ${setIdx + 1}`}
                         value={set.weightKg}
                         onChange={(e) => handleUpdateSetValue(exIdx, setIdx, 'weightKg', parseFloat(e.target.value) || 0)}
                         className="metric h-9 w-full rounded-lg border border-line bg-base px-1 text-center text-[13.5px] font-semibold text-ink focus:border-lime focus:outline-none"
@@ -322,14 +326,14 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                       <input
                         type="number"
                         inputMode="numeric"
-                        aria-label={`Repetições da série ${setIdx + 1}`}
+                        aria-label={`RepetiÃ§Ãµes da sÃ©rie ${setIdx + 1}`}
                         value={set.repsCompleted}
                         onChange={(e) => handleUpdateSetValue(exIdx, setIdx, 'repsCompleted', parseInt(e.target.value, 10) || 0)}
                         className="metric h-9 w-full rounded-lg border border-line bg-base px-1 text-center text-[13.5px] font-semibold text-ink focus:border-lime focus:outline-none"
                       />
 
                       <select
-                        aria-label={`RIR da série ${setIdx + 1}`}
+                        aria-label={`RIR da sÃ©rie ${setIdx + 1}`}
                         value={set.rirAchieved}
                         onChange={(e) => handleUpdateSetValue(exIdx, setIdx, 'rirAchieved', parseInt(e.target.value, 10))}
                         className="metric h-9 w-full appearance-none rounded-lg border border-line bg-base text-center text-[13px] font-medium text-muted focus:border-lime focus:outline-none"
@@ -345,9 +349,9 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                         <button
                           onClick={() => setOpenMenu(openMenu === `${exIdx}-${setIdx}` ? null : `${exIdx}-${setIdx}`)}
                           className="flex h-7 w-7 items-center justify-center rounded-md text-faint transition hover:bg-elevated hover:text-ink"
-                          aria-label={`Opções da série ${setIdx + 1}`}
+                          aria-label={`OpÃ§Ãµes da sÃ©rie ${setIdx + 1}`}
                         >
-                          <span className="leading-none">⋯</span>
+                          <span className="leading-none">â‹¯</span>
                         </button>
                         {openMenu === `${exIdx}-${setIdx}` && (
                           <div className="absolute right-0 top-8 z-10 w-40 rounded-xl border border-line-strong bg-elevated p-1 shadow-xl">
@@ -366,7 +370,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                               className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] text-danger hover:bg-panel"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
-                              Remover série
+                              Remover sÃ©rie
                             </button>
                           </div>
                         )}
@@ -378,7 +382,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                     onClick={() => handleAddSet(exIdx)}
                     className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-line py-2 text-[13px] font-medium text-muted transition hover:border-lime/50 hover:text-lime"
                   >
-                    <Plus className="h-3.5 w-3.5" /> Série
+                    <Plus className="h-3.5 w-3.5" /> SÃ©rie
                   </button>
                 </div>
               </section>
@@ -386,7 +390,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
           })}
         </div>
 
-        {/* Fechar a sessão */}
+        {/* Fechar a sessÃ£o */}
         <section className="panel mt-4 overflow-hidden">
           <button
             onClick={() => setShowSummary((v) => !v)}
@@ -395,7 +399,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
           >
             <span className="flex items-center gap-2 text-[13.5px] font-medium text-ink">
               <Clock className="h-4 w-4 text-lime" />
-              Como foi a sessão?
+              Como foi a sessÃ£o?
             </span>
             <ChevronDown className={`h-4 w-4 text-muted transition ${showSummary ? 'rotate-180' : ''}`} />
           </button>
@@ -405,7 +409,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
               <div>
                 <div className="flex items-center justify-between">
                   <label htmlFor="rpe" className="label">
-                    Esforço percebido (RPE)
+                    EsforÃ§o percebido (RPE)
                   </label>
                   <span className="metric text-[13.5px] font-semibold text-lime">{perceivedRPE}</span>
                 </div>
@@ -437,12 +441,12 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
 
               <div>
                 <label htmlFor="notes" className="label">
-                  Observações
+                  ObservaÃ§Ãµes
                 </label>
                 <input
                   id="notes"
                   type="text"
-                  placeholder="Carga subiu com folga, técnica estável…"
+                  placeholder="Carga subiu com folga, tÃ©cnica estÃ¡velâ€¦"
                   value={sessionNotes}
                   onChange={(e) => setSessionNotes(e.target.value)}
                   className="field mt-1.5"
@@ -453,7 +457,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
         </section>
       </div>
 
-      {/* Cronômetro de descanso flutuante */}
+      {/* CronÃ´metro de descanso flutuante */}
       {restRemaining > 0 && (
         <div className="fixed bottom-28 right-4 z-20 w-[168px] rounded-2xl border border-line-strong bg-elevated p-3 shadow-xl sm:right-6">
           <div className="flex items-center gap-2.5">
@@ -497,7 +501,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
         </div>
       )}
 
-      {/* Rodapé da sessão */}
+      {/* RodapÃ© da sessÃ£o */}
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-base/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
           <div className="flex items-center gap-5">
@@ -508,7 +512,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
               </div>
             </div>
             <div className="hidden sm:block">
-              <div className="text-[11.5px] text-faint">Séries</div>
+              <div className="text-[11.5px] text-faint">SÃ©ries</div>
               <div className="metric text-[15px] font-semibold text-lime">
                 {totalCompletedSets}<span className="text-[11.5px] font-normal text-faint"> / {totalSets}</span>
               </div>

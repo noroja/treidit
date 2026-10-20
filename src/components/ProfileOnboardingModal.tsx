@@ -1,3 +1,4 @@
+﻿import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import React, { useState } from 'react';
 import { X, User, Target, Dumbbell, Activity, Check, Sparkles, Scale, AlertCircle } from 'lucide-react';
 import { UserProfile, GoalType, GenderType, ExperienceLevel, EquipmentType, Anthropometry } from '../types';
@@ -61,7 +62,7 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
       preferredExercises: preferredExercises.split(',').map((s) => s.trim()).filter(Boolean),
       dislikedExercises: dislikedExercises.split(',').map((s) => s.trim()).filter(Boolean),
       availableEquipment,
-      limitations: limitations || 'Nenhuma limitação relatada.',
+      limitations: limitations || 'Nenhuma limitaÃ§Ã£o relatada.',
       activityLevel,
     };
 
@@ -80,17 +81,19 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
   };
 
   const goalsList: { id: GoalType; label: string; desc: string }[] = [
-    { id: 'hipertrofia', label: 'Hipertrofia Muscular', desc: 'Foco em ganho de massa magra com superávit leve' },
-    { id: 'perda_gordura', label: 'Perda de Gordura', desc: 'Déficit calórico com alta preservação muscular' },
-    { id: 'recomposicao', label: 'Recomposição Corporal', desc: 'Perder gordura e ganhar massa simultaneamente' },
-    { id: 'manutencao', label: 'Manutenção', desc: 'Consolidação de peso e tônus muscular' },
+    { id: 'hipertrofia', label: 'Hipertrofia Muscular', desc: 'Foco em ganho de massa magra com superÃ¡vit leve' },
+    { id: 'perda_gordura', label: 'Perda de Gordura', desc: 'DÃ©ficit calÃ³rico com alta preservaÃ§Ã£o muscular' },
+    { id: 'recomposicao', label: 'RecomposiÃ§Ã£o Corporal', desc: 'Perder gordura e ganhar massa simultaneamente' },
+    { id: 'manutencao', label: 'ManutenÃ§Ã£o', desc: 'ConsolidaÃ§Ã£o de peso e tÃ´nus muscular' },
     { id: 'ganho_peso', label: 'Ganho de Peso', desc: 'Bulking estruturado para biotipos ectomorfos' },
-    { id: 'performance', label: 'Performance & Força', desc: 'Potência máxima e otimização neural' },
+    { id: 'performance', label: 'Performance & ForÃ§a', desc: 'PotÃªncia mÃ¡xima e otimizaÃ§Ã£o neural' },
   ];
+
+  useLockBodyScroll(true);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-panel border border-elevated rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col  overflow-hidden">
+      <div className="bg-panel border border-elevated rounded-2xl w-full max-w-2xl max-h-modal flex flex-col  overflow-hidden">
         
         {/* Header */}
         <div className="bg-base p-4 border-b border-elevated flex items-center justify-between">
@@ -99,7 +102,7 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
               <User className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">Avaliação Inicial & Perfil do Usuário</h2>
+              <h2 className="text-base font-bold text-white">AvaliaÃ§Ã£o Inicial & Perfil do UsuÃ¡rio</h2>
               <span className="text-xs text-muted">Etapa {activeStep} de 3</span>
             </div>
           </div>
@@ -169,7 +172,7 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="text-strong font-semibold block mb-1">Sexo Biológico</label>
+                    <label className="text-strong font-semibold block mb-1">Sexo BiolÃ³gico</label>
                     <select
                       value={gender}
                       onChange={(e) => setGender(e.target.value as GenderType)}
@@ -205,13 +208,13 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
                   />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="text-strong font-semibold block mb-1">Nível de Atividade</label>
+                  <label className="text-strong font-semibold block mb-1">NÃ­vel de Atividade</label>
                   <select
                     value={activityLevel}
                     onChange={(e) => setActivityLevel(e.target.value as any)}
                     className="w-full bg-base border border-line-strong rounded-lg p-2.5 text-white focus:border-lime focus:outline-none"
                   >
-                    <option value="sedentario">Sedentário (trabalho sentado)</option>
+                    <option value="sedentario">SedentÃ¡rio (trabalho sentado)</option>
                     <option value="moderado">Moderado</option>
                     <option value="ativo">Ativo</option>
                     <option value="muito_ativo">Muito Ativo</option>
@@ -248,7 +251,7 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-strong font-semibold block mb-1">Circunferência Abdominal (cm) *</label>
+                  <label className="text-strong font-semibold block mb-1">CircunferÃªncia Abdominal (cm) *</label>
                   <input
                     type="number"
                     step="0.5"
@@ -260,7 +263,7 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
                   <span className="text-[11px] text-faint mt-0.5 block">Medido na altura da cicatriz umbilical</span>
                 </div>
                 <div>
-                  <label className="text-strong font-semibold block mb-1">Circunferência do Pescoço (cm) *</label>
+                  <label className="text-strong font-semibold block mb-1">CircunferÃªncia do PescoÃ§o (cm) *</label>
                   <input
                     type="number"
                     step="0.5"
@@ -269,13 +272,13 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
                     onChange={(e) => setNeckCm(parseFloat(e.target.value))}
                     className="w-full bg-base border border-line-strong rounded-lg p-2.5 text-white focus:border-lime focus:outline-none"
                   />
-                  <span className="text-[11px] text-faint mt-0.5 block">Logo abaixo do pomo de adão</span>
+                  <span className="text-[11px] text-faint mt-0.5 block">Logo abaixo do pomo de adÃ£o</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-strong font-semibold block mb-1">Braço Contraído (cm)</label>
+                  <label className="text-strong font-semibold block mb-1">BraÃ§o ContraÃ­do (cm)</label>
                   <input
                     type="number"
                     step="0.5"
@@ -309,7 +312,7 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
               {/* Instant Navy Preview */}
               <div className="bg-lime/10 border border-lime/25 p-4 rounded-xl flex items-center justify-between">
                 <div>
-                  <span className="text-lime font-bold block">Composição Corporal Estimada</span>
+                  <span className="text-lime font-bold block">ComposiÃ§Ã£o Corporal Estimada</span>
                   <span className="text-[12.5px] text-muted">Algoritmo US Navy Body Fat</span>
                 </div>
                 <div className="text-right">
@@ -327,20 +330,20 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-strong font-semibold block mb-1">Experiência</label>
+                  <label className="text-strong font-semibold block mb-1">ExperiÃªncia</label>
                   <select
                     value={experience}
                     onChange={(e) => setExperience(e.target.value as ExperienceLevel)}
                     className="w-full bg-base border border-line-strong rounded-lg p-2.5 text-white focus:border-lime focus:outline-none"
                   >
                     <option value="iniciante">Iniciante (&lt; 1 ano)</option>
-                    <option value="intermediario">Intermediário (1 a 3 anos)</option>
-                    <option value="avancado">Avançado (3+ anos)</option>
+                    <option value="intermediario">IntermediÃ¡rio (1 a 3 anos)</option>
+                    <option value="avancado">AvanÃ§ado (3+ anos)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="text-strong font-semibold block mb-1">Frequência Semanal</label>
+                  <label className="text-strong font-semibold block mb-1">FrequÃªncia Semanal</label>
                   <select
                     value={frequencyDays}
                     onChange={(e) => setFrequencyDays(parseInt(e.target.value))}
@@ -354,7 +357,7 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-strong font-semibold block mb-1">Tempo por Sessão</label>
+                  <label className="text-strong font-semibold block mb-1">Tempo por SessÃ£o</label>
                   <input
                     type="number"
                     value={sessionDurationMin}
@@ -366,52 +369,52 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
               </div>
 
               <div>
-                <label className="text-strong font-semibold block mb-1">Equipamentos Disponíveis</label>
+                <label className="text-strong font-semibold block mb-1">Equipamentos DisponÃ­veis</label>
                 <select
                   value={availableEquipment}
                   onChange={(e) => setAvailableEquipment(e.target.value as EquipmentType)}
                   className="w-full bg-base border border-line-strong rounded-lg p-2.5 text-white focus:border-lime focus:outline-none"
                 >
-                  <option value="academia_completa">Academia Completa (Barras, Halteres, Polias e Máquinas)</option>
-                  <option value="halteres_banco">Halteres e Banco Regulável</option>
-                  <option value="peso_corporal_homegym">Home Gym / Calistenia / Elásticos</option>
+                  <option value="academia_completa">Academia Completa (Barras, Halteres, Polias e MÃ¡quinas)</option>
+                  <option value="halteres_banco">Halteres e Banco RegulÃ¡vel</option>
+                  <option value="peso_corporal_homegym">Home Gym / Calistenia / ElÃ¡sticos</option>
                 </select>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-strong font-semibold block mb-1">Exercícios Favoritos (Opcional)</label>
+                  <label className="text-strong font-semibold block mb-1">ExercÃ­cios Favoritos (Opcional)</label>
                   <input
                     type="text"
                     value={preferredExercises}
                     onChange={(e) => setPreferredExercises(e.target.value)}
-                    placeholder="Ex: Supino Reto, Agachamento, Elevação Lateral"
+                    placeholder="Ex: Supino Reto, Agachamento, ElevaÃ§Ã£o Lateral"
                     className="w-full bg-base border border-line-strong rounded-lg p-2.5 text-white focus:border-lime focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-strong font-semibold block mb-1">Exercícios que Não Gosta / Evita</label>
+                  <label className="text-strong font-semibold block mb-1">ExercÃ­cios que NÃ£o Gosta / Evita</label>
                   <input
                     type="text"
                     value={dislikedExercises}
                     onChange={(e) => setDislikedExercises(e.target.value)}
-                    placeholder="Ex: Agachamento Frontal, Tríceps Francês"
+                    placeholder="Ex: Agachamento Frontal, TrÃ­ceps FrancÃªs"
                     className="w-full bg-base border border-line-strong rounded-lg p-2.5 text-white focus:border-lime focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-strong font-semibold block mb-1">Lesões, Dores ou Limitações Articulares</label>
+                <label className="text-strong font-semibold block mb-1">LesÃµes, Dores ou LimitaÃ§Ãµes Articulares</label>
                 <input
                   type="text"
                   value={limitations}
                   onChange={(e) => setLimitations(e.target.value)}
-                  placeholder="Ex: Condromalácia patelar no joelho direito; evitar sobrecarga axial excessiva na lombar"
+                  placeholder="Ex: CondromalÃ¡cia patelar no joelho direito; evitar sobrecarga axial excessiva na lombar"
                   className="w-full bg-base border border-line-strong rounded-lg p-2.5 text-white focus:border-lime focus:outline-none"
                 />
                 <span className="text-[11px] text-faint mt-1 block">
-                  O algoritmo de treino substitui exercícios de risco por alternativas biomecanicamente favoráveis.
+                  O algoritmo de treino substitui exercÃ­cios de risco por alternativas biomecanicamente favorÃ¡veis.
                 </span>
               </div>
             </div>
@@ -435,7 +438,7 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
                 onClick={() => setActiveStep((prev) => (prev + 1) as any)}
                 className="px-5 py-2.5 rounded-xl bg-lime hover:bg-lime text-base font-bold transition   cursor-pointer"
               >
-                Próxima Etapa →
+                PrÃ³xima Etapa â†’
               </button>
             ) : (
               <button
@@ -443,7 +446,7 @@ export const ProfileOnboardingModal: React.FC<ProfileOnboardingModalProps> = ({
                 className="px-6 py-2.5 rounded-xl bg-lime hover:bg-lime text-base font-bold transition   active:scale-95 cursor-pointer flex items-center gap-1.5"
               >
                 <Sparkles className="w-4 h-4 fill-base" />
-                <span>Gerar Treino & Nutrição Adaptada</span>
+                <span>Gerar Treino & NutriÃ§Ã£o Adaptada</span>
               </button>
             )}
           </div>

@@ -28,6 +28,9 @@
 @layer base {
   html {
     color-scheme: dark;
+    /* iOS Safari: impede "text inflation" ao rotacionar */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
@@ -58,6 +61,24 @@
   button,
   a {
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iPhone: viewport-fit=cover deixa o conteúdo sob a notch em landscape/PWA —
+     respeitaremos os insets nas bordas (portrait: 0; landscape/PWA: aplicáveis) */
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* iOS Safari dá auto-zoom em qualquer input < 16px ao ganhar foco —
+     nunca deixar o usuário "preso" com a página em zoom que não volta */
+  @media (pointer: coarse) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
 
   :focus-visible {
@@ -306,6 +327,35 @@
 
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* iOS Safari: dvh acompanha a barra de endereço dinâmica (vh fica maior que
+     a área visível e corta o rodapé dos modais). Fallback vh + upgrade dvh. */
+  .max-h-modal {
+    max-height: 92vh;
+  }
+  .max-h-modal-lg {
+    max-height: 94vh;
+  }
+  .max-h-photo {
+    max-height: 85vh;
+  }
+  .h-modal {
+    height: 90vh;
+  }
+  @supports (height: 100dvh) {
+    .max-h-modal {
+      max-height: 92dvh;
+    }
+    .max-h-modal-lg {
+      max-height: 94dvh;
+    }
+    .max-h-photo {
+      max-height: 85dvh;
+    }
+    .h-modal {
+      height: 90dvh;
+    }
   }
 
   .no-scrollbar::-webkit-scrollbar {

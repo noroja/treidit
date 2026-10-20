@@ -1,3 +1,4 @@
+﻿import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import React, { useState, useMemo } from 'react';
 import { X, Search, Dumbbell, Filter, AlertCircle, CheckCircle2, ChevronRight, Info, Eye, Layers, Flame, BookOpen } from 'lucide-react';
 import { EXERCISE_LIBRARY, AVAILABLE_MUSCLE_GROUPS } from '../data/exerciseLibraryData';
@@ -21,14 +22,14 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
 
   const equipmentOptions = [
     'todos',
-    'Barra Olímpica',
+    'Barra OlÃ­mpica',
     'Halteres',
     'Polia / Crossover',
-    'Máquina',
+    'MÃ¡quina',
     'Peso Corporal',
     'Kettlebell',
     'Barra W / EZ',
-    'Elásticos / Faixas',
+    'ElÃ¡sticos / Faixas',
   ];
 
   // Filtered exercises with high performance memoization
@@ -57,9 +58,11 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
 
   const visibleExercises = filtered.slice(0, visibleCount);
 
+  useLockBodyScroll(true);
+
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-panel border border-elevated rounded-2xl w-full max-w-4xl max-h-[94vh] flex flex-col  overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-panel border border-elevated rounded-2xl w-full max-w-4xl max-h-modal-lg flex flex-col  overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="bg-base p-4 border-b border-elevated flex items-center justify-between">
@@ -69,13 +72,13 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-semibold text-white">Banco de Exercícios Físicos (PT-BR)</h2>
+                <h2 className="text-base sm:text-lg font-semibold text-white">Banco de ExercÃ­cios FÃ­sicos (PT-BR)</h2>
                 <span className="text-[11px]  font-extrabold px-2 py-0.5 rounded-full bg-lime/15 text-lime border border-lime/30">
-                  {EXERCISE_LIBRARY.length} Exercícios
+                  {EXERCISE_LIBRARY.length} ExercÃ­cios
                 </span>
               </div>
               <p className="text-xs text-muted">
-                Guia anatômico, padrões biomecânicos e instruções de execução traduzidas para o português
+                Guia anatÃ´mico, padrÃµes biomecÃ¢nicos e instruÃ§Ãµes de execuÃ§Ã£o traduzidas para o portuguÃªs
               </p>
             </div>
           </div>
@@ -95,7 +98,7 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
             <Search className="w-4 h-4 absolute left-3.5 top-3 text-muted" />
             <input
               type="text"
-              placeholder="Buscar entre 870+ exercícios (ex: Supino, Agachamento, Remada, Tríceps, Elevação)..."
+              placeholder="Buscar entre 870+ exercÃ­cios (ex: Supino, Agachamento, Remada, TrÃ­ceps, ElevaÃ§Ã£o)..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -158,10 +161,10 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
         {/* Results Info */}
         <div className="px-4 py-2 bg-base/40 border-b border-elevated/60 flex items-center justify-between text-[12.5px] text-muted">
           <span>
-            Mostrando <strong>{Math.min(visibleCount, filtered.length)}</strong> de <strong>{filtered.length}</strong> exercícios encontrados
+            Mostrando <strong>{Math.min(visibleCount, filtered.length)}</strong> de <strong>{filtered.length}</strong> exercÃ­cios encontrados
           </span>
           <span className="text-lime font-medium">
-            Classificados por biomecânica e RIR
+            Classificados por biomecÃ¢nica e RIR
           </span>
         </div>
 
@@ -170,8 +173,8 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
           {filtered.length === 0 ? (
             <div className="text-center py-16 text-faint space-y-2">
               <AlertCircle className="w-8 h-8 text-line-strong mx-auto" />
-              <p className="text-sm font-semibold text-muted">Nenhum exercício encontrado</p>
-              <p className="text-xs">Tente buscar por termos mais genéricos ou mudar os filtros de músculo e equipamento.</p>
+              <p className="text-sm font-semibold text-muted">Nenhum exercÃ­cio encontrado</p>
+              <p className="text-xs">Tente buscar por termos mais genÃ©ricos ou mudar os filtros de mÃºsculo e equipamento.</p>
             </div>
           ) : (
             visibleExercises.map((ex) => {
@@ -223,7 +226,7 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
                             {ex.mechanics}
                           </span>
                           <span className="text-[11px] text-muted">
-                            Nível: <strong className="text-strong">{ex.difficulty}</strong>
+                            NÃ­vel: <strong className="text-strong">{ex.difficulty}</strong>
                           </span>
                         </div>
                         <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">{ex.name}</h3>
@@ -232,10 +235,10 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
 
                     <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
                       <span className="text-[11px] text-lime-dim font-semibold bg-lime-dim/10 px-2.5 py-1 rounded-lg border border-lime-dim/20">
-                        {ex.mechanics.includes('Composto') ? 'Multiarticular (Foco Carga)' : 'Isolador (Foco Metabólico)'}
+                        {ex.mechanics.includes('Composto') ? 'Multiarticular (Foco Carga)' : 'Isolador (Foco MetabÃ³lico)'}
                       </span>
                       <button className="p-1 rounded-lg bg-panel text-muted hover:text-white">
-                        {isExpanded ? '▲' : '▼'}
+                        {isExpanded ? 'â–²' : 'â–¼'}
                       </button>
                     </div>
                   </div>
@@ -247,7 +250,7 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
                       {/* Photo demonstrations if available */}
                       {ex.images && ex.images.length > 0 && (
                         <div>
-                          <span className="text-[12.5px] font-bold text-muted block mb-2">Demonstração Visual da Execução:</span>
+                          <span className="text-[12.5px] font-bold text-muted block mb-2">DemonstraÃ§Ã£o Visual da ExecuÃ§Ã£o:</span>
                           <div className="flex gap-2 overflow-x-auto pb-2">
                             {ex.images.map((img, idx) => (
                               <div
@@ -278,7 +281,7 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
                         <div className="bg-panel/70 p-3.5 rounded-xl border border-elevated/80 space-y-1.5">
                           <strong className="text-lime text-xs flex items-center gap-1.5">
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            Passo a Passo da Execução Correta (PT-BR):
+                            Passo a Passo da ExecuÃ§Ã£o Correta (PT-BR):
                           </strong>
                           <ol className="list-decimal list-inside space-y-1.5 pl-1 text-strong leading-relaxed">
                             {ex.instructions.map((step, idx) => (
@@ -294,7 +297,7 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                         <div className="bg-panel/50 p-3 rounded-xl border border-elevated">
                           <strong className="text-lime-dim block mb-1 text-[12.5px]">
-                            Prescrição & RIR (Belmiro de Salles):
+                            PrescriÃ§Ã£o & RIR (Belmiro de Salles):
                           </strong>
                           <p className="text-strong leading-relaxed text-[12.5px]">
                             {ex.targetRirRecommendation}
@@ -303,12 +306,12 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
 
                         <div className="bg-panel/50 p-3 rounded-xl border border-elevated">
                           <strong className="text-lime-dim block mb-1 text-[12.5px]">
-                            Músculos Secundários / Sinergistas:
+                            MÃºsculos SecundÃ¡rios / Sinergistas:
                           </strong>
                           <p className="text-strong text-[12.5px]">
                             {ex.secondaryMuscles && ex.secondaryMuscles.length > 0
                               ? ex.secondaryMuscles.join(', ')
-                              : 'Estabilizadores do core e sinergistas específicos.'}
+                              : 'Estabilizadores do core e sinergistas especÃ­ficos.'}
                           </p>
                         </div>
                       </div>
@@ -339,7 +342,7 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
                 onClick={() => setVisibleCount((prev) => prev + 30)}
                 className="px-6 py-2.5 rounded-xl bg-elevated hover:bg-line-strong text-strong text-xs font-bold transition cursor-pointer border border-line-strong "
               >
-                Carregar mais exercícios (+30) • {filtered.length - visibleCount} restantes
+                Carregar mais exercÃ­cios (+30) â€¢ {filtered.length - visibleCount} restantes
               </button>
             </div>
           )}
@@ -353,7 +356,7 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
           className="fixed inset-0 z-60 bg-black/90 backdrop-blur-lg flex items-center justify-center p-4"
           onClick={() => setShowImagePreview(null)}
         >
-          <div className="relative max-w-2xl max-h-[85vh] bg-base p-2 rounded-2xl border border-elevated ">
+          <div className="relative max-w-2xl max-h-photo bg-base p-2 rounded-2xl border border-elevated ">
             <button
               onClick={() => setShowImagePreview(null)}
               className="absolute -top-3 -right-3 p-1.5 rounded-full bg-elevated text-white hover:bg-line-strong cursor-pointer"
@@ -362,7 +365,7 @@ export const ExerciseLibraryModal: React.FC<ExerciseLibraryModalProps> = ({
             </button>
             <img
               src={showImagePreview}
-              alt="Visualização do exercício"
+              alt="VisualizaÃ§Ã£o do exercÃ­cio"
               className="max-h-[80vh] w-auto rounded-xl object-contain mx-auto"
             />
           </div>

@@ -1,3 +1,4 @@
+﻿import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import React, { useMemo, useState } from 'react';
 import {
   Plus,
@@ -81,7 +82,7 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
       estimatedBodyFatPct: previewBf,
       estimatedLeanMassKg: previewLeanMass,
       estimatedFatMassKg: previewFatMass,
-      notes: formNotes || 'Acompanhamento periódico registrado.',
+      notes: formNotes || 'Acompanhamento periÃ³dico registrado.',
     });
     setShowAddModal(false);
   };
@@ -152,13 +153,15 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
 
   const maxExerciseVolume = exerciseBest[0]?.volume || 1;
 
+  useLockBodyScroll(showAddModal);
+
   return (
     <div className="space-y-5 pb-2">
       <header className="flex flex-col gap-4 pt-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-semibold leading-none sm:text-[32px]">Evolução</h1>
+          <h1 className="text-[28px] font-semibold leading-none sm:text-[32px]">EvoluÃ§Ã£o</h1>
           <p className="mt-2 text-[14px] text-muted">
-            Cada treino registrado vira um ponto. {workoutLogs.length} sessões no ciclo atual.
+            Cada treino registrado vira um ponto. {workoutLogs.length} sessÃµes no ciclo atual.
           </p>
         </div>
         <button onClick={() => setShowAddModal(true)} className="btn btn-lime h-9 self-start px-4 sm:self-auto">
@@ -167,7 +170,7 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
         </button>
       </header>
 
-      <div className="seg" role="tablist" aria-label="Seções de evolução">
+      <div className="seg" role="tablist" aria-label="SeÃ§Ãµes de evoluÃ§Ã£o">
         <button role="tab" aria-selected={tab === 'dados'} onClick={() => setTab('dados')} className="seg-item">
           Seus dados
         </button>
@@ -182,9 +185,9 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-[15px] font-semibold">Volume de treino</h2>
-                <p className="mt-0.5 text-[13px] text-muted">Carga × repetições de todas as séries concluídas</p>
+                <p className="mt-0.5 text-[13px] text-muted">Carga Ã— repetiÃ§Ãµes de todas as sÃ©ries concluÃ­das</p>
               </div>
-              <div className="seg" role="group" aria-label="Período">
+              <div className="seg" role="group" aria-label="PerÃ­odo">
                 <button aria-selected={range === '7d'} onClick={() => setRange('7d')} className="seg-item">
                   7 dias
                 </button>
@@ -200,19 +203,19 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
                   {brl(periodVolume)}
                   <span className="ml-1.5 text-[13.5px] font-normal text-faint">kg</span>
                 </div>
-                <div className="mt-1.5 text-[13px] text-muted">volume no período</div>
+                <div className="mt-1.5 text-[13px] text-muted">volume no perÃ­odo</div>
               </div>
               <div className="text-right">
                 {volumeDelta === null ? (
-                  <span className="text-[13px] text-faint">Sem período anterior</span>
+                  <span className="text-[13px] text-faint">Sem perÃ­odo anterior</span>
                 ) : (
                   <span className={`flex items-center justify-end gap-1 text-[13px] font-medium ${volumeDelta >= 0 ? 'text-lime' : 'text-muted'}`}>
                     {volumeDelta >= 0 ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-                    {brl(Math.abs(volumeDelta))} kg vs. período anterior
+                    {brl(Math.abs(volumeDelta))} kg vs. perÃ­odo anterior
                   </span>
                 )}
                 <div className="mt-1 text-[12.5px] text-faint">
-                  {periodLogs.length} {periodLogs.length === 1 ? 'sessão' : 'sessões'}
+                  {periodLogs.length} {periodLogs.length === 1 ? 'sessÃ£o' : 'sessÃµes'}
                 </div>
               </div>
             </div>
@@ -225,7 +228,7 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-[15px] font-semibold">Mapa muscular</h2>
-                  <p className="mt-0.5 text-[13px] text-muted">Séries concluídas por grupo no período</p>
+                  <p className="mt-0.5 text-[13px] text-muted">SÃ©ries concluÃ­das por grupo no perÃ­odo</p>
                 </div>
                 <span className="text-[12.5px] text-faint">
                   {muscleVolumes.length} {muscleVolumes.length === 1 ? 'grupo' : 'grupos'}
@@ -251,15 +254,15 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
                 ))}
               </ul>
               {muscleVolumes.length === 0 && (
-                <p className="mt-4 text-[13px] text-muted">Nenhuma série concluída no período. Inicie um treino para preencher o mapa.</p>
+                <p className="mt-4 text-[13px] text-muted">Nenhuma sÃ©rie concluÃ­da no perÃ­odo. Inicie um treino para preencher o mapa.</p>
               )}
             </section>
 
             <section className="panel p-5 lg:col-span-7">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-[15px] font-semibold">Carga por exercício</h2>
-                  <p className="mt-0.5 text-[13px] text-muted">Melhor série e volume acumulado no período</p>
+                  <h2 className="text-[15px] font-semibold">Carga por exercÃ­cio</h2>
+                  <p className="mt-0.5 text-[13px] text-muted">Melhor sÃ©rie e volume acumulado no perÃ­odo</p>
                 </div>
                 <TrendingUp className="h-4 w-4 text-lime" />
               </div>
@@ -270,7 +273,7 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
                     <div className="flex items-baseline justify-between gap-3">
                       <span className="truncate text-[13.5px] text-strong">{ex.name}</span>
                       <span className="metric shrink-0 text-[13px] text-muted">
-                        {ex.best} kg <span className="text-faint">· {brl(ex.volume)} kg</span>
+                        {ex.best} kg <span className="text-faint">Â· {brl(ex.volume)} kg</span>
                       </span>
                     </div>
                     <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-line">
@@ -287,8 +290,8 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
 
           <section className="panel px-5 py-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-[15px] font-semibold">Composição corporal</h2>
-              <span className="text-[12.5px] text-faint">Última avaliação {dayLabel(current.date || new Date().toISOString())}</span>
+              <h2 className="text-[15px] font-semibold">ComposiÃ§Ã£o corporal</h2>
+              <span className="text-[12.5px] text-faint">Ãšltima avaliaÃ§Ã£o {dayLabel(current.date || new Date().toISOString())}</span>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-y-4 sm:grid-cols-4 sm:divide-x sm:divide-line">
               <div className="sm:pr-5">
@@ -307,7 +310,7 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
               <div className="sm:px-5">
                 <div className="flex items-center gap-1.5 text-[12.5px] text-faint"><Target className="h-3 w-3" /> Gordura</div>
                 <div className="metric mt-1.5 text-[20px] font-medium text-lime">{current.estimatedBodyFatPct} <span className="text-[12.5px] font-normal text-faint">%</span></div>
-                <div className="mt-1 text-[12.5px] text-muted">{Math.abs(bfDelta)}% no ciclo · Navy</div>
+                <div className="mt-1 text-[12.5px] text-muted">{Math.abs(bfDelta)}% no ciclo Â· Navy</div>
               </div>
               <div className="sm:pl-5">
                 <div className="text-[12.5px] text-faint">Massa magra</div>
@@ -319,11 +322,11 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
 
           <section className="panel flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-[14px] font-semibold">Quer a leitura do KINETIC IA sobre estes números?</h2>
-              <p className="mt-1 text-[13px] text-muted">Cruza volume, cargas e composição corporal com a sua resposta semanal.</p>
+              <h2 className="text-[14px] font-semibold">Quer a leitura do KINETIC IA sobre estes nÃºmeros?</h2>
+              <p className="mt-1 text-[13px] text-muted">Cruza volume, cargas e composiÃ§Ã£o corporal com a sua resposta semanal.</p>
             </div>
             <button onClick={onOpenAi} className="btn btn-outline h-9 self-start px-4 sm:self-auto">
-              Analisar evolução
+              Analisar evoluÃ§Ã£o
             </button>
           </section>
         </>
@@ -331,17 +334,17 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
         <>
           <section className="panel overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4">
-              <h2 className="text-[15px] font-semibold">Últimas medidas</h2>
+              <h2 className="text-[15px] font-semibold">Ãšltimas medidas</h2>
               <button onClick={() => setShowAddModal(true)} className="text-[13px] font-medium text-lime">
-                Nova avaliação
+                Nova avaliaÃ§Ã£o
               </button>
             </div>
             <div className="grid grid-cols-2 gap-y-5 border-t border-line px-5 py-5 sm:grid-cols-3">
               {[
                 { label: 'Peso', value: current.weightKg, unit: 'kg' },
                 { label: 'Cintura', value: current.waistCm, unit: 'cm' },
-                { label: 'Pescoço', value: current.neckCm, unit: 'cm' },
-                { label: 'Braço', value: current.armCm, unit: 'cm' },
+                { label: 'PescoÃ§o', value: current.neckCm, unit: 'cm' },
+                { label: 'BraÃ§o', value: current.armCm, unit: 'cm' },
                 { label: 'Coxa', value: current.thighCm, unit: 'cm' },
                 { label: 'Panturrilha', value: current.calfCm, unit: 'cm' },
               ].map((m) => (
@@ -355,7 +358,7 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line bg-surface/50 px-5 py-3">
               <span className="text-[13px] text-muted">
-                Estimativa Navy: <strong className="font-semibold text-lime">{current.estimatedBodyFatPct}%</strong> de gordura ·{' '}
+                Estimativa Navy: <strong className="font-semibold text-lime">{current.estimatedBodyFatPct}%</strong> de gordura Â·{' '}
                 {current.estimatedLeanMassKg} kg de massa magra
               </span>
               <span className="text-[12.5px] text-faint">{anthropometry.length} registros</span>
@@ -365,7 +368,7 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
           <section className="panel overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4">
               <h2 className="flex items-center gap-2 text-[15px] font-semibold">
-                <CalendarDays className="h-4 w-4 text-lime" /> Histórico
+                <CalendarDays className="h-4 w-4 text-lime" /> HistÃ³rico
               </h2>
             </div>
             <div className="overflow-x-auto border-t border-line">
@@ -375,7 +378,7 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
                     <th className="px-5 py-2.5 font-medium">Data</th>
                     <th className="px-3 py-2.5 text-right font-medium">Peso</th>
                     <th className="px-3 py-2.5 text-right font-medium">Cintura</th>
-                    <th className="px-3 py-2.5 text-right font-medium">Braço</th>
+                    <th className="px-3 py-2.5 text-right font-medium">BraÃ§o</th>
                     <th className="px-3 py-2.5 text-right font-medium">Coxa</th>
                     <th className="px-3 py-2.5 text-right font-medium">Pantur.</th>
                     <th className="px-3 py-2.5 text-right font-medium">% Gordura</th>
@@ -426,8 +429,8 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
-                  { label: 'Pescoço', value: formNeck, set: setFormNeck },
-                  { label: 'Braço', value: formArm, set: setFormArm },
+                  { label: 'PescoÃ§o', value: formNeck, set: setFormNeck },
+                  { label: 'BraÃ§o', value: formArm, set: setFormArm },
                   { label: 'Coxa', value: formThigh, set: setFormThigh },
                   { label: 'Panturrilha', value: formCalf, set: setFormCalf },
                 ].map((field) => (
@@ -456,10 +459,10 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
               </div>
 
               <label className="block">
-                <span className="label mb-1.5 block">Observações</span>
+                <span className="label mb-1.5 block">ObservaÃ§Ãµes</span>
                 <input
                   type="text"
-                  placeholder="Medido em jejum, após hidratação regular…"
+                  placeholder="Medido em jejum, apÃ³s hidrataÃ§Ã£o regularâ€¦"
                   value={formNotes}
                   onChange={(e) => setFormNotes(e.target.value)}
                   className="field"
