@@ -17,6 +17,7 @@ import {
 import { UserProfile, WorkoutProgram, NutritionPlan, Anthropometry, DailyNutritionLog, RecoveryLog, AdaptiveAdjustment, WorkoutSessionLog } from '../types';
 import { DisclaimerBanner } from './DisclaimerBanner';
 import { MuscleMap } from './ui/MuscleMap';
+import { weekActivity, weeklyProgress, type ActivityDay } from '../engine/streak';
 
 interface DashboardViewProps {
   profile: UserProfile;
@@ -27,6 +28,7 @@ interface DashboardViewProps {
   recovery: RecoveryLog;
   latestAdjustment: AdaptiveAdjustment;
   workoutLogs: WorkoutSessionLog[];
+  activityDays: ActivityDay[];
   onStartWorkout: (routineIndex: number) => void;
   onNavigateTab: (tab: any) => void;
   onOpenAi: () => void;
@@ -51,6 +53,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   recovery,
   latestAdjustment,
   workoutLogs,
+  activityDays,
   onStartWorkout,
   onNavigateTab,
   onOpenAi,
@@ -100,6 +103,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const today = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
 
+  const week = weekActivity(activityDays);
+  const weekly = weeklyProgress({ days: activityDays, logs: workoutLogs, program });
+
   return (
     <div className="space-y-5">
       <header className="pt-1">
@@ -110,7 +116,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           Olá, {profile.name.split(' ')[0]}
         </h1>
         <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-muted">
-          {program.isDeloadWeek ? 'Semana de deload: volume reduzido para consolidar.' : 'Plano calibrado para hipertrofia.'}{' '}
+          {program.isDeloadWeek ? 'Semana de deload: volume reduzido para consolidar.' : 'Plano individualizado pela sua triagem.'}{' '}
           {todayRoutine ? `Hoje é ${todayRoutine.name.replace('Treino ', 'treino ').split(':')[0]}.` : ''}
         </p>
       </header>
@@ -151,6 +157,66 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="track mt-3">
             <span style={{ width: `${calPercent}%` }} />
+          </div>
+        </div>
+      </section>
+
+      {/* Ofensiva + progresso semanal (§19) */}
+      <section className="panel p-4 sm:p-5" aria-label="Ofensiva e progresso semanal">
+        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+          <div>
+            <div className="flex items-center gap-2 text-[13.5px] font-medium text-muted">
+              <Flame className="h-4 w-4 text-lime" /> Ofensiva
+            </div>
+            <div className="mt-1.5 flex items-end gap-2">
+              <span className="metric text-[34px] font-semibold leading-none text-ink">{weekly.streak.current}</span>
+              <span className="pb-1 text-[13px] text-muted">
+                {weekly.streak.current === 1 ? 'dia consecutivo' : 'dias consecutivos'}
+              </span>
+            </div>
+            <p className="mt-1.5 text-[12.5px] text-faint">
+              Melhor: {weekly.streak.best} {weekly.streak.best === 1 ? 'dia' : 'dias'} ·{' '}
+              {weekly.streak.activeLast30} ativos em 30
+            </p>
+          </div>
+
+          <div className="flex gap-1.5" aria-label="Últimos 7 dias">
+            {week.map((d) => (
+              <div key={d.date} className="flex flex-col items-center gap-1">
+                <div
+                  title={`${d.date}${d.active ? ' · ativo' : ' · sem registro'}`}
+                  className={`flex h-8 w-7 items-center justify-center rounded-lg border transition ${
+                    d.active ? 'border-lime/50 bg-lime/20' : 'border-line bg-base'
+                  } ${d.isToday ? 'ring-1 ring-lime/60' : ''}`}
+                >
+                  {d.active ? (
+                    <Flame className="h-3.5 w-3.5 text-lime" />
+                  ) : (
+                    <span className="h-1 w-1 rounded-full bg-faint" />
+                  )}
+                </div>
+                <span className={`text-[10.5px] ${d.isToday ? 'font-semibold text-lime' : 'text-faint'}`}>
+                  {d.weekday}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-2 border-t border-line pt-3 text-center">
+          <div>
+            <div className="metric text-[18px] font-semibold text-ink">
+              {weekly.sessionsDone}/{weekly.sessionsPlanned}
+            </div>
+            <div className="mt-0.5 text-[11.5px] text-faint">sessões na semana</div>
+          </div>
+          <div>
+            <div className="metric text-[18px] font-semibold text-ink">{weekly.consistencyPct}%</div>
+            <div className="mt-0.5 text-[11.5px] text-faint">constância (7 dias)</div>
+          </div>
+          <div>
+            <div className="metric text-[18px] font-semibold text-ink">{weekly.mealsCompleted}</div>
+            <div className="mt-0.5 text-[11.5px] text-faint">refeições concluídas</div>
           </div>
         </div>
       </section>

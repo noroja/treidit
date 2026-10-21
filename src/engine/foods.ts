@@ -88,6 +88,8 @@ const FOODS_RAW: Array<Omit<Food, 'cookingState'> & { cookingState?: 'cru' | 'co
   { id: 'feijao_preto_cozido', name: 'Feijão preto cozido', group: 'proteina_vegetal', proteinPer100g: 8.9, carbsPer100g: 20.4, fatPer100g: 0.5, fiberPer100g: 8.5, cookingState: 'cozido', source: 'TACO' },
   { id: 'lentilha_cozida', name: 'Lentilha cozida', group: 'proteina_vegetal', proteinPer100g: 9.0, carbsPer100g: 22.8, fatPer100g: 0.5, fiberPer100g: 7.9, cookingState: 'cozido', source: 'TACO' },
   { id: 'grao_de_bico_cozido', name: 'Grão-de-bico cozido', group: 'proteina_vegetal', proteinPer100g: 8.9, carbsPer100g: 27.1, fatPer100g: 2.6, fiberPer100g: 7.6, cookingState: 'cozido', source: 'TACO' },
+  { id: 'tofu_firmo', name: 'Tofu firme', group: 'proteina_vegetal', proteinPer100g: 17.3, carbsPer100g: 2.8, fatPer100g: 8.7, fiberPer100g: 2.3, source: 'USDA' },
+  { id: 'proteina_soja_isolada', name: 'Proteína isolada de soja', group: 'suplemento', proteinPer100g: 80.7, carbsPer100g: 7.4, fatPer100g: 3.4, fiberPer100g: 5.5, source: 'USDA' },
   // ---- tubérculos / cereais (carboidrato) ---------------------------------
   { id: 'arroz_branco_cozido', name: 'Arroz branco cozido', group: 'carboidrato', proteinPer100g: 2.5, carbsPer100g: 28.0, fatPer100g: 0.2, fiberPer100g: 1.6, cookingState: 'cozido', source: 'TACO' },
   { id: 'arroz_integral_cozido', name: 'Arroz integral cozido', group: 'carboidrato', proteinPer100g: 2.6, carbsPer100g: 25.8, fatPer100g: 0.6, fiberPer100g: 2.7, cookingState: 'cozido', source: 'TACO' },

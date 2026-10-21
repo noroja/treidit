@@ -29,8 +29,24 @@ import {
   INITIAL_ADAPTIVE_ADJUSTMENTS,
   INITIAL_NOTIFICATIONS
 } from './data/initialData';
-import { generateNutritionPlan, generateWorkoutProgram, runAdaptiveAudit, applyUserDietTargets } from './utils/calculations';
+import {
+  calculateNavyBodyFat,
+  generateNutritionPlan,
+  generateWorkoutProgram,
+  runAdaptiveAudit,
+  applyUserDietTargets,
+} from './utils/calculations';
 import { computeConsumedFromMeals, createFreeMeal } from './engine/meals';
+import {
+  applyAnamnesisToProgram,
+  deriveAnthropometry,
+  deriveDietConstraints,
+  deriveProfile,
+  triageAnamnesis,
+  type Anamnesis,
+} from './engine/anamnesis';
+import { toLocalISODate } from './engine/dates';
+import { mergeActivityDay, type ActivityDay, type ActivityPatch } from './engine/streak';
 
 import { Navbar } from './components/Navbar';
 import { BottomNav, TabType } from './components/BottomNav';
@@ -51,6 +67,7 @@ import { ExerciseLibraryModal } from './components/ExerciseLibraryModal';
 import { CustomWorkoutModal } from './components/CustomWorkoutModal';
 import { WorkoutFeedbackModal } from './components/WorkoutFeedbackModal';
 import { OwnDietModal } from './components/OwnDietModal';
+import { AnamnesisWizard } from './components/AnamnesisWizard';
 
 export default function App() {
   // Navigation State
@@ -67,6 +84,7 @@ export default function App() {
   const [showCustomWorkoutModal, setShowCustomWorkoutModal] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showOwnDietModal, setShowOwnDietModal] = useState(false);
+  const [showAnamnesisWizard, setShowAnamnesisWizard] = useState(false);
 
   // App Domain State with LocalStorage Persistence
   const [profile, setProfile] = useState<UserProfile>(() => {
@@ -160,10 +178,42 @@ export default function App() {
     }
   });
 
+  // §19: ANAMNESE — a triagem é a fonte da verdade do plano. Sem ela, o app
+  // abre o wizard obrigatório (dados de exemplo nunca viram prescrição).
+  const [anamnesis, setAnamnesis] = useState<Anamnesis | null>(() => {
+    try {
+      const saved = localStorage.getItem('kinetic_anamnesis');
+      return saved ? (JSON.parse(saved) as Anamnesis) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // §19: OFENSIVA — um registro por dia com treino, refeições e check-in.
+  const [activityDays, setActivityDays] = useState<ActivityDay[]>(() => {
+    try {
+      const saved = localStorage.getItem('kinetic_activity_days');
+      return saved ? (JSON.parse(saved) as ActivityDay[]) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Gate de triagem: primeira vez (sem anamnese) ou reabertura pelo Perfil.
+  const anamnesisGateOpen = !anamnesis || showAnamnesisWizard;
+
   // Save to localStorage on state changes
   useEffect(() => {
     localStorage.setItem('kinetic_profile', JSON.stringify(profile));
   }, [profile]);
+
+  useEffect(() => {
+    if (anamnesis) localStorage.setItem('kinetic_anamnesis', JSON.stringify(anamnesis));
+  }, [anamnesis]);
+
+  useEffect(() => {
+    localStorage.setItem('kinetic_activity_days', JSON.stringify(activityDays));
+  }, [activityDays]);
 
   useEffect(() => {
     localStorage.setItem('kinetic_anthropometry', JSON.stringify(anthropometry));
@@ -213,9 +263,78 @@ export default function App() {
     setActiveRoutineIndex(routineIndex);
   };
 
+  // §19: grava atividade do dia para ofensiva + progresso semanal.
+  const recordActivity = (patch: Omit<ActivityPatch, 'date'>) => {
+    setActivityDays((prev) => mergeActivityDay(prev, { date: toLocalISODate(), ...patch }));
+  };
+
+  // §19: conclui a triagem e SÓ ENTÃO gera treino/dieta individualizados.
+  const handleCompleteAnamnesis = (a: Anamnesis) => {
+    const firstTriage = !anamnesis;
+    const triage = triageAnamnesis(a);
+    const nextProfile = deriveProfile(a);
+    const constraints = deriveDietConstraints(a);
+    const nextProgram = applyAnamnesisToProgram(generateWorkoutProgram(nextProfile), a, triage);
+    const nextNutrition = generateNutritionPlan(nextProfile, {
+      mealsPerDay: triage.recommendedMealCount,
+      constraints,
+    });
+
+    const neckCm = a.measurements.neckCm ?? (a.identification.sex === 'feminino' ? 32 : 38);
+    const bodyFat = calculateNavyBodyFat(
+      a.identification.sex,
+      a.identification.heightCm,
+      a.measurements.waistCm,
+      neckCm,
+    );
+    const anth = deriveAnthropometry(a, bodyFat);
+    const zeroLog: DailyNutritionLog = {
+      date: toLocalISODate(),
+      consumedCalories: 0,
+      consumedProtein: 0,
+      consumedCarbs: 0,
+      consumedFat: 0,
+      consumedWaterMl: 0,
+      adherenceScore: 3,
+      hungerLevel: 'moderada',
+      satietyLevel: 'boa',
+      energyLevel: 'normal',
+    };
+
+    setProfile(nextProfile);
+    setProgram(nextProgram);
+    setNutrition(nextNutrition);
+    setTodayNutrition(zeroLog);
+    setAnamnesis(a);
+    setShowAnamnesisWizard(false);
+
+    const previousAnth = firstTriage ? [] : anthropometry.filter((r) => r.date !== anth.date);
+    const nextAnth = [anth, ...previousAnth];
+    setAnthropometry(nextAnth);
+
+    if (firstTriage) {
+      setWorkoutLogs([]);
+      setAdjustments([]);
+      setNotifications([]);
+      setWorkoutFeedback([]);
+      setActivityDays([]);
+      setRecovery({
+        date: toLocalISODate(),
+        sleepHours: a.lifestyle.sleepHours,
+        sleepQuality: a.lifestyle.sleepQuality,
+        fatigueScore: Math.max(1, Math.min(5, Math.round(a.lifestyle.stress))),
+        muscleSoreness: a.injuries.painLevel >= 4 ? 'moderada' : 'leve',
+      });
+    } else {
+      const audit = runAdaptiveAudit(nextProfile, nextAnth, workoutLogs, nextNutrition, 0.9);
+      setAdjustments((prev) => [audit, ...prev]);
+    }
+  };
+
   const handleFinishWorkout = (log: WorkoutSessionLog) => {
     setWorkoutLogs((prev) => [log, ...prev]);
     setActiveRoutineIndex(null);
+    recordActivity({ workoutsDelta: 1 });
 
     // Run adaptive check after recording
     const latestAudit = runAdaptiveAudit(profile, anthropometry, [log, ...workoutLogs], nutrition, 0.9);
@@ -246,6 +365,7 @@ export default function App() {
       consumedCarbs: 0,
       consumedFat: 0,
     }));
+    recordActivity({ mealsCompleted: 0 });
     setShowOwnDietModal(false);
   };
 
@@ -281,8 +401,14 @@ export default function App() {
     // no comando — o perfil gerado não sobrescreve o que ele manteve.
     const keepCustomProgram = program.splitType === 'personalizado';
     const keepUserDiet = nutrition.audit?.energyMethod === 'definido_pelo_usuario';
-    const newProgram = generateWorkoutProgram(updatedProfile);
-    const newNutrition = generateNutritionPlan(updatedProfile);
+    const generatedProgram = generateWorkoutProgram(updatedProfile);
+    const newProgram = anamnesis ? applyAnamnesisToProgram(generatedProgram, anamnesis) : generatedProgram;
+    const newNutrition = generateNutritionPlan(
+      updatedProfile,
+      anamnesis
+        ? { mealsPerDay: anamnesis.nutrition.mealsPerDay, constraints: deriveDietConstraints(anamnesis) }
+        : undefined,
+    );
     const nutritionForAudit = keepUserDiet ? nutrition : newNutrition;
     setProgram(keepCustomProgram ? program : newProgram);
     setNutrition(nutritionForAudit);
@@ -297,35 +423,31 @@ export default function App() {
   };
 
   const handleToggleMealCompleted = (mealId: string) => {
-    setNutrition((prev) => {
-      const updatedMeals = prev.meals.map((m) => {
-        if (m.id === mealId) {
-          const toggled = !m.completed;
-          return {
-            ...m,
-            completed: toggled,
-            items: m.items.map((it) => ({ ...it, completed: toggled })),
-          };
-        }
-        return m;
-      });
-
-      // Recalculate consumed from completed meals — FASE 3: via motor de refeições
-      const consumed = computeConsumedFromMeals(updatedMeals);
-
-      setTodayNutrition((prevToday) => ({
-        ...prevToday,
-        consumedCalories: consumed.caloriesKcal,
-        consumedProtein: consumed.proteinG,
-        consumedCarbs: consumed.carbsG,
-        consumedFat: consumed.fatG,
-      }));
-
-      return {
-        ...prev,
-        meals: updatedMeals,
-      };
+    const updatedMeals = nutrition.meals.map((m) => {
+      if (m.id === mealId) {
+        const toggled = !m.completed;
+        return {
+          ...m,
+          completed: toggled,
+          items: m.items.map((it) => ({ ...it, completed: toggled })),
+        };
+      }
+      return m;
     });
+
+    setNutrition((prev) => ({ ...prev, meals: updatedMeals }));
+
+    // Recalculate consumed from completed meals — FASE 3: via motor de refeições
+    const consumed = computeConsumedFromMeals(updatedMeals);
+    setTodayNutrition((prevToday) => ({
+      ...prevToday,
+      consumedCalories: consumed.caloriesKcal,
+      consumedProtein: consumed.proteinG,
+      consumedCarbs: consumed.carbsG,
+      consumedFat: consumed.fatG,
+    }));
+
+    recordActivity({ mealsCompleted: updatedMeals.filter((m) => m.completed).length });
   };
 
   const handleQuickAddWater = (amountMl: number) => {
@@ -333,6 +455,7 @@ export default function App() {
       ...prev,
       consumedWaterMl: prev.consumedWaterMl + amountMl,
     }));
+    recordActivity({ waterMlDelta: amountMl });
   };
 
   // FASE 3: edição/substituição/adição de itens de refeição — consumo do dia
@@ -389,6 +512,7 @@ export default function App() {
   };
 
   const handleApplyCheckinReport = (report: WeeklyCheckinReport) => {
+    recordActivity({ checkin: true });
     const newAdj: AdaptiveAdjustment = {
       id: `adj_checkin_${Date.now()}`,
       date: report.date,
@@ -425,7 +549,7 @@ export default function App() {
   };
 
   const handleResetDemoData = () => {
-    if (window.confirm('Deseja restaurar os dados de exemplo do aplicativo?')) {
+    if (window.confirm('Apagar todos os dados salvos e refazer a triagem inicial?')) {
       localStorage.clear();
       setProfile(INITIAL_USER_PROFILE);
       setAnthropometry(INITIAL_ANTHROPOMETRY);
@@ -436,10 +560,25 @@ export default function App() {
       setRecovery(INITIAL_RECOVERY);
       setAdjustments(INITIAL_ADAPTIVE_ADJUSTMENTS);
       setNotifications(INITIAL_NOTIFICATIONS);
+      setWorkoutFeedback([]);
+      setActivityDays([]);
+      setAnamnesis(null);
+      setShowAnamnesisWizard(false);
     }
   };
 
-  const latestAdjustment = adjustments[0] || INITIAL_ADAPTIVE_ADJUSTMENTS[0];
+  const neutralAdjustment: AdaptiveAdjustment = {
+    id: 'adj_neutro_inicial',
+    date: toLocalISODate(),
+    status: 'optimal',
+    title: 'Plano inicial calibrado pela triagem',
+    whatChanged: 'Nenhum ajuste aplicado — ciclo começa com as metas validadas pelo motor.',
+    whyChanged: 'Ainda não há histórico suficiente para adaptar com segurança.',
+    dataTrigger: 'Triagem inicial concluída',
+    evaluationMetrics: 'Aguardando a primeira semana de treinos e check-ins',
+    applied: false,
+  };
+  const latestAdjustment = adjustments[0] || neutralAdjustment;
 
   return (
     <div className="flex min-h-screen flex-col bg-base font-sans text-strong selection:bg-lime selection:text-lime-ink">
@@ -469,6 +608,7 @@ export default function App() {
             recovery={recovery}
             latestAdjustment={latestAdjustment}
             workoutLogs={workoutLogs}
+            activityDays={activityDays}
             onStartWorkout={handleStartWorkout}
             onNavigateTab={setCurrentTab}
             onOpenAi={() => setShowAiModal(true)}
@@ -559,6 +699,8 @@ export default function App() {
             latestAnthropometry={anthropometry[0]}
             program={program}
             nutrition={nutrition}
+            anamnesis={anamnesis}
+            onOpenAnamnesis={() => setShowAnamnesisWizard(true)}
             onOpenEvaluation={() => setShowOnboardingModal(true)}
             onOpenAdaptive={() => setShowAdaptiveModal(true)}
             onOpenAi={() => setShowAiModal(true)}
@@ -666,6 +808,15 @@ export default function App() {
           profile={profile}
           onClose={() => setShowOwnDietModal(false)}
           onApplyUserDiet={handleApplyUserDiet}
+        />
+      )}
+
+      {/* §19: triagem obrigatória no primeiro acesso (e reedição pelo Perfil) */}
+      {anamnesisGateOpen && (
+        <AnamnesisWizard
+          initial={anamnesis}
+          onComplete={handleCompleteAnamnesis}
+          onCancel={anamnesis ? () => setShowAnamnesisWizard(false) : undefined}
         />
       )}
     </div>

@@ -1,6 +1,7 @@
 import { Anthropometry, GenderType, GoalType, UserProfile, WorkoutProgram, WorkoutRoutine, MacroTarget, NutritionPlan, AdaptiveAdjustment, WorkoutSessionLog } from '../types';
 import { computeNutritionTargets, distributeMeals, validateUserTargets } from '../engine/macros';
 import { estimateBmr } from '../engine/energy';
+import { buildDietPlan, type DietConstraints } from '../engine/dietBuilder';
 
 /**
  * Calculates BMR using Mifflin-St Jeor formula
@@ -65,7 +66,10 @@ export function calculateNavyBodyFat(
 /**
  * Calculates customized Nutrition Plan with scientific macro ratios
  */
-export function generateNutritionPlan(profile: UserProfile): NutritionPlan {
+export function generateNutritionPlan(
+  profile: UserProfile,
+  options: { mealsPerDay?: number; constraints?: DietConstraints } = {},
+): NutritionPlan {
   // FASE 2: o cálculo agora é 100% delegado ao motor determinístico
   // (src/engine) — validação de entradas, clamps de segurança (piso calórico
   // por sexo, |Δ| ≤ 25%/20% do TEE, proteína em [1.4, 2.7] g/kg, gordura
@@ -84,19 +88,6 @@ export function generateNutritionPlan(profile: UserProfile): NutritionPlan {
   const { targets, audit, teeKcalPerDay } = result;
   const targetCalories = targets.caloriesKcalPerDay;
 
-  // Distribuição das metas por refeição (mesmos pesos 25/35/20/20), com a
-  // sobra de arredondamento lançada na maior refeição para somar 100%.
-  const mealShares = [0.25, 0.35, 0.2, 0.2];
-  const mealTargets = distributeMeals(
-    {
-      caloriesKcalPerDay: targets.caloriesKcalPerDay,
-      proteinGramsPerDay: targets.proteinGramsPerDay,
-      carbsGramsPerDay: targets.carbsGramsPerDay,
-      fatGramsPerDay: targets.fatGramsPerDay,
-    },
-    mealShares,
-  );
-
   const bmrResult = estimateBmr({
     weightKg: profile.weightKg,
     heightCm: profile.heightCm,
@@ -113,59 +104,21 @@ export function generateNutritionPlan(profile: UserProfile): NutritionPlan {
     waterMl: targets.waterMillilitersPerDay,
   };
 
-  // Generate structured meals
-  const meals = [
-    {
-      id: 'meal_1',
-      name: 'Café da Manhã Energético',
-      time: '07:30',
-      targetCalories: mealTargets[0].caloriesKcal,
-      completed: true,
-      items: [
-        { id: 'i1', name: 'Ovos mexidos inteiros (3 un)', portion: '150g', calories: 217, protein: 20, carbs: 2, fat: 14.3, completed: true, foodId: 'ovo_cozido', grams: 150 },
-        { id: 'i2', name: 'Aveia em flocos finos', portion: '50g', calories: 178, protein: 7, carbs: 29.5, fat: 3.5, fiber: 4.6, completed: true, foodId: 'aveia_flocos', grams: 50 },
-        { id: 'i3', name: 'Banana prata fatiada com canela', portion: '90g', calories: 107, protein: 1.2, carbs: 25.2, fat: 0.1, fiber: 1.8, completed: true, foodId: 'banana_prata', grams: 90 },
-        { id: 'i4', name: 'Café preto s/ açúcar', portion: '150ml', calories: 4, protein: 0, carbs: 1, fat: 0, completed: true }
-      ]
+  // FASE 6: refeições montadas pelo motor de dieta a partir do banco
+  // TACO/USDA, respeitando padrão alimentar/restrições da anamnese. Nenhum
+  // item é "texto fixo": porções derivadas dos macros e kcal por Atwater.
+  const built = buildDietPlan({
+    targets: {
+      caloriesKcalPerDay: targets.caloriesKcalPerDay,
+      proteinGramsPerDay: targets.proteinGramsPerDay,
+      carbsGramsPerDay: targets.carbsGramsPerDay,
+      fatGramsPerDay: targets.fatGramsPerDay,
     },
-    {
-      id: 'meal_2',
-      name: 'Almoço Anabólico & Equilibrado',
-      time: '12:30',
-      targetCalories: mealTargets[1].caloriesKcal,
-      completed: true,
-      items: [
-        { id: 'i5', name: 'Peito de frango grelhado', portion: '180g', calories: 282, protein: 55.8, carbs: 0, fat: 6.5, completed: true, foodId: 'frango_peito_grelhado', grams: 180 },
-        { id: 'i6', name: 'Arroz branco cozido', portion: '160g', calories: 198, protein: 4, carbs: 44.8, fat: 0.3, fiber: 2.6, completed: true, foodId: 'arroz_branco_cozido', grams: 160 },
-        { id: 'i7', name: 'Feijão preto cozido temperado', portion: '100g', calories: 122, protein: 8.9, carbs: 20.4, fat: 0.5, fiber: 8.5, completed: true, foodId: 'feijao_preto_cozido', grams: 100 },
-        { id: 'i8', name: 'Salada verde variada com azeite de oliva extra virgem', portion: '1 prato + 8ml', calories: 85, protein: 1, carbs: 4, fat: 8, completed: true }
-      ]
-    },
-    {
-      id: 'meal_3',
-      name: 'Lanche Pré/Pós-Treino',
-      time: '16:30',
-      targetCalories: mealTargets[2].caloriesKcal,
-      completed: false,
-      items: [
-        { id: 'i9', name: 'Iogurte natural desnatado ou grego', portion: '170g', calories: 90, protein: 7, carbs: 8.3, fat: 3.2, completed: false, foodId: 'iogurte_desnatado', grams: 170 },
-        { id: 'i10', name: 'Whey Protein 80%', portion: '30g', calories: 117, protein: 23.4, carbs: 2.4, fat: 1.5, completed: false, foodId: 'whey_concentrado', grams: 30 },
-        { id: 'i11', name: 'Maçã fresca', portion: '130g', calories: 73, protein: 0.4, carbs: 17.6, fat: 0.1, fiber: 3.1, completed: false, foodId: 'maca', grams: 130 }
-      ]
-    },
-    {
-      id: 'meal_4',
-      name: 'Jantar Reparador',
-      time: '20:30',
-      targetCalories: mealTargets[3].caloriesKcal,
-      completed: false,
-      items: [
-        { id: 'i12', name: 'Patinho moído ou filé de tilápia grelhada', portion: '160g', calories: 270, protein: 44, carbs: 0, fat: 10.4, completed: false, foodId: 'patinho_grelhado', grams: 160 },
-        { id: 'i13', name: 'Batata doce ou inglesa cozida', portion: '180g', calories: 186, protein: 2.5, carbs: 43.2, fat: 0.4, fiber: 4, completed: false, foodId: 'batata_doce_cozida', grams: 180 },
-        { id: 'i14', name: 'Brócolis e cenoura no vapor', portion: '120g', calories: 46, protein: 4.1, carbs: 6.2, fat: 0.5, fiber: 3.1, completed: false, foodId: 'brocolis_cenoura', grams: 120 }
-      ]
-    }
-  ];
+    mealsPerDay: options.mealsPerDay,
+    constraints: options.constraints,
+  });
+
+  const meals = built.meals;
 
   return {
     bmr: bmrResult.bmrKcalPerDay,
@@ -179,7 +132,7 @@ export function generateNutritionPlan(profile: UserProfile): NutritionPlan {
       ...audit,
       energyMethod: bmrResult.method,
       formula: bmrResult.formula,
-      limitations: `${bmrResult.limitations} ${estimateTeeLimitation(profile)}`,
+      limitations: `${bmrResult.limitations} ${estimateTeeLimitation(profile)} ${built.audit.notes.join(' ')}`.trim(),
     },
   };
 }
@@ -226,7 +179,6 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
             targetRir: 2,
             restSeconds: 150,
             notes: 'Pausa de 1s no ponto de maior estiramento muscular. Não travar os joelhos.',
-            personalRecord: { weightKg: 95, reps: 8, date: '2026-09-22' }
           },
           {
             id: 'ex_2',
@@ -239,7 +191,6 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
             targetRir: 1,
             restSeconds: 120,
             notes: 'Depressão e retração escapular ativas durante todo o arco.',
-            personalRecord: { weightKg: 80, reps: 8, date: '2026-09-25' }
           },
           {
             id: 'ex_3',
@@ -252,7 +203,6 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
             targetRir: 1,
             restSeconds: 120,
             notes: 'Puxar com os cotovelos, focando na contração das escápulas.',
-            personalRecord: { weightKg: 70, reps: 10, date: '2026-09-27' }
           },
           {
             id: 'ex_4',
@@ -265,7 +215,6 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
             targetRir: 1,
             restSeconds: 90,
             notes: 'Contração de pico de 2 segundos no topo.',
-            personalRecord: { weightKg: 100, reps: 10, date: '2026-09-18' }
           },
           {
             id: 'ex_5',
@@ -278,7 +227,6 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
             targetRir: 0,
             restSeconds: 60,
             notes: 'Plano escapular (~30° à frente). Amplitude completa.',
-            personalRecord: { weightKg: 14, reps: 14, date: '2026-09-28' }
           },
           {
             id: 'ex_6',
@@ -312,7 +260,6 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
             targetRir: 2,
             restSeconds: 120,
             notes: 'Manter a curvatura neutra da coluna. Sentir estiramento dos ísquios.',
-            personalRecord: { weightKg: 75, reps: 10, date: '2026-09-20' }
           },
           {
             id: 'ex_8',
@@ -325,7 +272,6 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
             targetRir: 1,
             restSeconds: 120,
             notes: 'Cotovelos levemente à frente do corpo.',
-            personalRecord: { weightKg: 24, reps: 8, date: '2026-09-21' }
           },
           {
             id: 'ex_9',
@@ -338,7 +284,6 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
             targetRir: 1,
             restSeconds: 90,
             notes: 'Alongamento profundo no topo sem soltar os ombros bruscamente.',
-            personalRecord: { weightKg: 65, reps: 11, date: '2026-09-23' }
           },
           {
             id: 'ex_10',
@@ -351,7 +296,6 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
             targetRir: 1,
             restSeconds: 75,
             notes: 'Cotovelos alinhados ao tronco.',
-            personalRecord: { weightKg: 30, reps: 10, date: '2026-09-25' }
           },
           {
             id: 'ex_11',
@@ -364,7 +308,6 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
             targetRir: 0,
             restSeconds: 60,
             notes: 'Abrir a corda no final da extensão.',
-            personalRecord: { weightKg: 35, reps: 13, date: '2026-09-27' }
           }
         ]
       }
@@ -484,7 +427,7 @@ export function generateWorkoutProgram(profile: UserProfile): WorkoutProgram {
     name: `Periodização Hipertrofia Adaptativa - ${profile.goal.toUpperCase()}`,
     splitType,
     weeklyFrequency: frequencyDays,
-    currentWeek: 3,
+    currentWeek: 1,
     totalWeeks: 8,
     isDeloadWeek: false,
     routines,
