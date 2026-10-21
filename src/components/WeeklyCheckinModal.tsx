@@ -16,6 +16,7 @@ import {
   RecoveryLog 
 } from '../types';
 import { generateLocalWeeklyCheckin } from '../utils/methodology';
+import { toLocalISODate } from '../engine/dates';
 
 interface WeeklyCheckinModalProps {
   profile: UserProfile;
@@ -71,7 +72,7 @@ export const WeeklyCheckinModal: React.FC<WeeklyCheckinModalProps> = ({
     setAppliedNotice(false);
 
     const checkinData: WeeklyCheckinData = {
-      date: new Date().toISOString().split('T')[0],
+      date: toLocalISODate(),
       weightKg: Number(weightKg),
       waistCm: Number(waistCm),
       avgRir: Number(avgRir),

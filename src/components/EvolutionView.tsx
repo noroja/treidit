@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Anthropometry, UserProfile, WorkoutSessionLog } from '../types';
 import { calculateNavyBodyFat } from '../utils/calculations';
+import { toLocalISODate } from '../engine/dates';
 import { VolumeChart } from './ui/VolumeChart';
 import { MuscleMap } from './ui/MuscleMap';
 import { muscleLabel } from './ui/MuscleMap';
@@ -70,7 +71,7 @@ export const EvolutionView: React.FC<EvolutionViewProps> = ({
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     onAddAnthropometry({
-      date: new Date().toISOString().split('T')[0],
+      date: toLocalISODate(),
       weightKg: Number(formWeight),
       heightCm: profile.heightCm,
       waistCm: Number(formWaist),

@@ -117,7 +117,21 @@ export default function App() {
   const [nutrition, setNutrition] = useState<NutritionPlan>(() => {
     try {
       const saved = localStorage.getItem('kinetic_nutrition');
-      return saved ? JSON.parse(saved) : INITIAL_NUTRITION_PLAN;
+      if (!saved) return INITIAL_NUTRITION_PLAN;
+      const plan = JSON.parse(saved) as NutritionPlan;
+      // Virada de dia: refeições marcadas ontem não podem contar hoje.
+      const planDay = localStorage.getItem('kinetic_nutrition_day');
+      if (planDay && planDay !== toLocalISODate()) {
+        return {
+          ...plan,
+          meals: plan.meals.map((meal) => ({
+            ...meal,
+            completed: false,
+            items: meal.items.map((item) => ({ ...item, completed: false })),
+          })),
+        };
+      }
+      return plan;
     } catch {
       return INITIAL_NUTRITION_PLAN;
     }
@@ -135,10 +149,23 @@ export default function App() {
   const [todayNutrition, setTodayNutrition] = useState<DailyNutritionLog>(() => {
     try {
       const saved = localStorage.getItem('kinetic_today_nutrition');
-      return saved ? JSON.parse(saved) : INITIAL_NUTRITION_LOGS[0];
+      if (saved) {
+        const log = JSON.parse(saved) as DailyNutritionLog;
+        if (log.date === toLocalISODate()) return log;
+      }
     } catch {
-      return INITIAL_NUTRITION_LOGS[0];
+      // cai no log zerado abaixo
     }
+    return {
+      ...INITIAL_NUTRITION_LOGS[0],
+      date: toLocalISODate(),
+      consumedCalories: 0,
+      consumedProtein: 0,
+      consumedCarbs: 0,
+      consumedFat: 0,
+      consumedWaterMl: 0,
+      adherenceScore: 3,
+    };
   });
 
   const [recovery, setRecovery] = useState<RecoveryLog>(() => {
@@ -225,6 +252,7 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('kinetic_nutrition', JSON.stringify(nutrition));
+    localStorage.setItem('kinetic_nutrition_day', toLocalISODate());
   }, [nutrition]);
 
   useEffect(() => {

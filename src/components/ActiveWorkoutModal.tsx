@@ -1,4 +1,5 @@
 ﻿import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
+import { toLocalISODate } from '../engine/dates';
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -174,7 +175,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
       id: `log_${Date.now()}`,
       routineId: routine.id,
       routineName: routine.name,
-      date: new Date().toISOString().split('T')[0],
+      date: toLocalISODate(),
       durationMinutes: Math.max(1, Math.round(elapsedSeconds / 60)),
       exercises: exercisesState,
       perceivedEffortRPE: perceivedRPE,

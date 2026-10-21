@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { AdaptiveAdjustment, UserProfile, Anthropometry, WorkoutProgram, NutritionPlan, WorkoutSessionLog, DailyNutritionLog } from '../types';
 import { runAdaptiveAudit } from '../utils/calculations';
+import { toLocalISODate } from '../engine/dates';
 
 interface AdaptiveEngineModalProps {
   adjustment: AdaptiveAdjustment;
@@ -72,7 +73,7 @@ export const AdaptiveEngineModal: React.FC<AdaptiveEngineModalProps> = ({
         const data = await response.json();
         const generatedAdj: AdaptiveAdjustment = {
           id: `adj_${Date.now()}`,
-          date: new Date().toISOString().split('T')[0],
+          date: toLocalISODate(),
           status: data.status || 'optimal',
           title: data.diagnosis || 'Auditoria Adaptativa Concluída',
           whatChanged: data.whatChanged || 'Manutenção programada do microciclo.',
